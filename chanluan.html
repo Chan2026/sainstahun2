@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>产卵大作战</title>
+    <!-- 引入字体和Tailwind CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
@@ -43,7 +44,6 @@
             0%, 100% { background-color: transparent; }
             50% { background-color: rgba(239, 68, 68, 0.2); }
         }
-        /* 针对超窄/短屏幕的微调 */
         @media (max-height: 600px) {
             #animal-icon { font-size: 60px; }
             #animal-name { font-size: 32px; }
@@ -77,10 +77,10 @@
         <div id="progress" class="h-full bg-orange-500 timer-bar" style="width: 100%"></div>
     </div>
 
-    <!-- 游戏区域 -->
+    <!-- 游戏主体 -->
     <div id="game-body" class="flex-grow flex flex-col items-center justify-center p-4 gap-6">
         
-        <!-- 问题卡片 -->
+        <!-- 题目卡片 -->
         <div id="question-card" class="bg-white rounded-[30px] shadow-xl p-8 w-full max-w-sm text-center border-b-8 border-orange-200 animate-pop">
             <div id="animal-icon" class="text-8xl leading-none mb-2">🐸</div>
             <h2 id="animal-name" class="cute-font text-5xl mb-2 text-gray-800">青蛙</h2>
@@ -89,7 +89,7 @@
             </div>
         </div>
 
-        <!-- 操作按钮 -->
+        <!-- 按钮 -->
         <div class="grid grid-cols-2 gap-6 w-full max-w-md">
             <button onclick="checkAnswer('多')" class="bg-emerald-500 hover:bg-emerald-600 text-white rounded-[30px] py-6 shadow-[0_8px_0_#059669] active:shadow-none active:translate-y-1 transition-all">
                 <div class="text-4xl mb-1 btn-emoji">🥚🥚🥚</div>
@@ -105,7 +105,7 @@
         </div>
     </div>
 
-    <!-- 开始遮罩 -->
+    <!-- 开始界面 -->
     <div id="overlay" class="fixed inset-0 bg-orange-500 z-50 flex items-center justify-center p-6">
         <div class="bg-white rounded-[40px] p-10 text-center shadow-2xl max-w-xs border-8 border-orange-200">
             <div class="text-8xl mb-6">🥚</div>
@@ -120,7 +120,7 @@
         </div>
     </div>
 
-    <!-- 结果遮罩 -->
+    <!-- 结果界面 -->
     <div id="result-overlay" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-6">
         <div class="text-center w-full max-w-sm">
             <h2 class="cute-font text-6xl text-orange-400 mb-8">时间到！</h2>
@@ -147,7 +147,6 @@
     </div>
 
     <script>
-        // 动物清单
         const animals = [
             { name: '青蛙', type: '多', icon: '🐸' },
             { name: '鱼', type: '多', icon: '🐟' },
