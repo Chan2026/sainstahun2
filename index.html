@@ -1,159 +1,149 @@
-import React, { useState } from 'react';
-import { Beaker, BookOpen, PawPrint, Leaf, Sun, Cloud, Gamepad2, PlusCircle, ArrowLeft, Lightbulb, Home } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二年级科学探险</title>
+    <!-- 引入样式 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #FFF0F5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .topic-card { transition: all 0.3s ease; }
+        .topic-card:hover { transform: scale(1.05); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="p-6">
 
-const App = () => {
-  const [selectedTopic, setSelectedTopic] = useState(null);
+    <!-- 顶部标题 -->
+    <header class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-pink-600 mb-2">🐾 二年级科学探险 🐾</h1>
+        <p id="page-subtitle" class="text-pink-400 text-lg">请选择一个科学主题！</p>
+    </header>
 
-  // --- 【修改这里】开始增加或修改内容 ---
-  const topicData = [
-    {
-      id: "animals",
-      title: "动物世界",
-      icon: <PawPrint className="w-12 h-12 text-orange-500" />,
-      bgColor: "bg-orange-100",
-      borderColor: "border-orange-300",
-      subtopics: [
-        { name: "卵生胎生", link: "卵生胎生.html" },
-        { name: "动物的进食习性", link: "animal-food.html" },
-        { name: "动物的生命周期", link: "animal-cycle.html" }
-      ]
-    },
-    {
-      id: "plants",
-      title: "植物园地",
-      icon: <Leaf className="w-12 h-12 text-green-500" />,
-      bgColor: "bg-green-100",
-      borderColor: "border-green-300",
-      subtopics: [
-        { name: "植物的组成部分", link: "plant-parts.html" },
-        { name: "种子的发芽", link: "plant-seed.html" }
-      ]
-    },
-    {
-      id: "weather",
-      title: "天气观测",
-      icon: <Cloud className="w-12 h-12 text-blue-500" />,
-      bgColor: "bg-blue-100",
-      borderColor: "border-blue-300",
-      subtopics: [
-        { name: "认识云朵", link: "weather-cloud.html" },
-        { name: "雨水的来源", link: "weather-rain.html" }
-      ]
-    },
-    {
-      id: "light",
-      title: "光与暗",
-      icon: <Sun className="w-12 h-12 text-yellow-500" />,
-      bgColor: "bg-yellow-100",
-      borderColor: "border-yellow-300",
-      subtopics: [
-        { name: "影子的形成", link: "light-shadow.html" },
-        { name: "光源在哪里？", link: "light-source.html" }
-      ]
-    },
-    {
-      id: "electricity",
-      title: "电路基础",
-      icon: <Lightbulb className="w-12 h-12 text-purple-500" />,
-      bgColor: "bg-purple-100",
-      borderColor: "border-purple-300",
-      subtopics: [
-        { name: "灯泡亮了", link: "bulb-light.html" },
-        { name: "导体与绝缘体", link: "conductor.html" }
-      ]
-    }
-  ];
-  // --- 【修改这里】结束 ---
-
-  const renderMainMenu = () => (
-    <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6">
-      {topicData.map((topic) => (
-        <button
-          key={topic.id}
-          onClick={() => setSelectedTopic(topic)}
-          className={`${topic.bgColor} ${topic.borderColor} border-4 rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg transform transition-transform hover:scale-105 active:scale-95`}
-        >
-          <div className="mb-4 bg-white p-4 rounded-full shadow-inner">
-            {topic.icon}
-          </div>
-          <span className="text-2xl font-bold text-gray-700">{topic.title}</span>
-          <span className="mt-2 text-sm text-gray-500">点击查看 {topic.subtopics.length} 个游戏</span>
+    <!-- 主目录界面 -->
+    <div id="main-menu" class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6">
+        
+        <!-- 主题1：动物 -->
+        <button onclick="showTopic('animals')" class="topic-card bg-orange-100 border-4 border-orange-300 rounded-3xl p-8 flex flex-col items-center shadow-lg">
+            <div class="bg-white p-4 rounded-full mb-4 text-4xl">🐾</div>
+            <span class="text-2xl font-bold text-gray-700">动物世界</span>
         </button>
-      ))}
-    </div>
-  );
 
-  const renderSubMenu = () => (
-    <div className="max-w-4xl mx-auto">
-      {/* 顶部的返回文字按钮 */}
-      <button 
-        onClick={() => setSelectedTopic(null)}
-        className="mb-6 flex items-center gap-2 text-pink-600 font-bold hover:underline bg-white/50 px-4 py-2 rounded-full"
-      >
-        <ArrowLeft size={20} /> 返回主目录
-      </button>
-      
-      <div className={`p-8 rounded-3xl border-4 ${selectedTopic.borderColor} ${selectedTopic.bgColor}`}>
-        <div className="flex items-center gap-4 mb-8">
-          <div className="bg-white p-3 rounded-full shadow-sm">
-            {selectedTopic.icon}
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800">{selectedTopic.title}</h2>
-        </div>
-
-        {/* 游戏列表 */}
-        <div className="grid grid-cols-1 gap-4 mb-8">
-          {selectedTopic.subtopics.map((sub, index) => (
-            <a
-              key={index}
-              href={sub.link}
-              className="bg-white p-5 rounded-2xl flex items-center justify-between shadow-md hover:bg-gray-50 transition-colors group border-2 border-transparent hover:border-pink-200"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-pink-100 text-pink-600 font-bold w-10 h-10 rounded-full flex items-center justify-center text-lg">
-                  {index + 1}
-                </div>
-                <span className="text-xl font-medium text-gray-700">{sub.name}</span>
-              </div>
-              <div className="flex items-center gap-2 text-pink-400">
-                <span className="text-sm font-bold">开始游戏</span>
-                <Gamepad2 className="group-hover:rotate-12 transition-transform" />
-              </div>
-            </a>
-          ))}
-        </div>
-
-        {/* 底部的超大返回按钮，方便孩子操作 */}
-        <button
-          onClick={() => setSelectedTopic(null)}
-          className="w-full bg-white/80 border-2 border-gray-200 py-4 rounded-2xl flex items-center justify-center gap-3 text-gray-500 font-bold hover:bg-white hover:text-pink-500 transition-all shadow-sm"
-        >
-          <Home size={24} />
-          <span>选其他主题</span>
+        <!-- 主题2：植物 -->
+        <button onclick="showTopic('plants')" class="topic-card bg-green-100 border-4 border-green-300 rounded-3xl p-8 flex flex-col items-center shadow-lg">
+            <div class="bg-white p-4 rounded-full mb-4 text-4xl">🌿</div>
+            <span class="text-2xl font-bold text-gray-700">植物园地</span>
         </button>
-      </div>
+
+        <!-- 主题3：天气 -->
+        <button onclick="showTopic('weather')" class="topic-card bg-blue-100 border-4 border-blue-300 rounded-3xl p-8 flex flex-col items-center shadow-lg">
+            <div class="bg-white p-4 rounded-full mb-4 text-4xl">☁️</div>
+            <span class="text-2xl font-bold text-gray-700">天气观测</span>
+        </button>
+
+        <!-- 主题4：光与暗 -->
+        <button onclick="showTopic('light')" class="topic-card bg-yellow-100 border-4 border-yellow-300 rounded-3xl p-8 flex flex-col items-center shadow-lg">
+            <div class="bg-white p-4 rounded-full mb-4 text-4xl">☀️</div>
+            <span class="text-2xl font-bold text-gray-700">光与暗</span>
+        </button>
+
     </div>
-  );
 
-  return (
-    <div className="min-h-screen bg-[#FFF0F5] p-6 font-sans">
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-pink-600 mb-2 flex items-center justify-center gap-3">
-          🐾 二年级科学探险 🐾
-        </h1>
-        <p className="text-pink-400 text-lg">
-          {selectedTopic ? `正在探索：${selectedTopic.title}` : "请选择一个科学主题！"}
-        </p>
-      </header>
+    <!-- 子话题界面（默认隐藏） -->
+    <div id="sub-menu" class="max-w-4xl mx-auto hidden">
+        <button onclick="goBack()" class="mb-6 flex items-center gap-2 text-pink-600 font-bold bg-white/50 px-4 py-2 rounded-full">
+            ⬅️ 返回主目录
+        </button>
+        
+        <div id="topic-box" class="p-8 rounded-3xl border-4 bg-white shadow-xl">
+            <h2 id="topic-title" class="text-3xl font-bold text-gray-800 mb-8 text-center">主题名字</h2>
+            
+            <!-- 游戏列表容器 -->
+            <div id="game-list" class="grid grid-cols-1 gap-4 mb-8">
+                <!-- 游戏链接会通过 JS 动态生成 -->
+            </div>
 
-      {selectedTopic ? renderSubMenu() : renderMainMenu()}
-
-      <footer className="text-center mt-12 text-gray-400 italic">
-        让科学变得更有趣！✨
-      </footer>
+            <!-- 底部大返回按钮 -->
+            <button onclick="goBack()" class="w-full bg-gray-100 border-2 border-gray-200 py-4 rounded-2xl flex items-center justify-center gap-3 text-gray-500 font-bold hover:bg-pink-100 hover:text-pink-600 transition-all">
+                🏠 选其他主题
+            </button>
+        </div>
     </div>
-  );
-};
 
+    <footer class="text-center mt-12 text-gray-400 italic">让科学变得更有趣！✨</footer>
 
-export default App;
+    <script>
+        // --- 在这里管理你的游戏数据 ---
+        const gameData = {
+            animals: {
+                title: "动物世界",
+                colorClass: "bg-orange-100",
+                borderColor: "border-orange-300",
+                games: [
+                    { name: "动物的繁殖方式", link: "卵生胎生.html" },
+                    { name: "动物的习性", link: "game-habit.html" },
+                    { name: "新游戏加在这里", link: "new-game.html" }
+                ]
+            },
+            plants: {
+                title: "植物园地",
+                colorClass: "bg-green-100",
+                borderColor: "border-green-300",
+                games: [
+                    { name: "植物的组成部分", link: "parts.html" },
+                    { name: "种子发芽", link: "seeds.html" }
+                ]
+            },
+            weather: {
+                title: "天气观测",
+                colorClass: "bg-blue-100",
+                borderColor: "border-blue-300",
+                games: [
+                    { name: "认识云朵", link: "clouds.html" }
+                ]
+            },
+            light: {
+                title: "光与暗",
+                colorClass: "bg-yellow-100",
+                borderColor: "border-yellow-300",
+                games: [
+                    { name: "影子的形成", link: "shadows.html" }
+                ]
+            }
+        };
+
+        function showTopic(topicId) {
+            const data = gameData[topicId];
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('sub-menu').classList.remove('hidden');
+            document.getElementById('page-subtitle').innerText = "正在探索：" + data.title;
+            
+            document.getElementById('topic-title').innerText = data.title;
+            const topicBox = document.getElementById('topic-box');
+            topicBox.className = `p-8 rounded-3xl border-4 shadow-xl ${data.colorClass} ${data.borderColor}`;
+
+            const listContainer = document.getElementById('game-list');
+            listContainer.innerHTML = ""; // 清空旧列表
+
+            data.games.forEach((game, index) => {
+                listContainer.innerHTML += `
+                    <a href="${game.link}" class="bg-white p-5 rounded-2xl flex items-center justify-between shadow-md hover:border-pink-300 border-2 border-transparent transition-all">
+                        <div class="flex items-center gap-4">
+                            <span class="bg-pink-100 text-pink-600 font-bold w-10 h-10 rounded-full flex items-center justify-center">${index + 1}</span>
+                            <span class="text-xl font-medium text-gray-700">${game.name}</span>
+                        </div>
+                        <span class="text-pink-400 font-bold">开始游戏 🎮</span>
+                    </a>
+                `;
+            });
+        }
+
+        function goBack() {
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('sub-menu').classList.add('hidden');
+            document.getElementById('page-subtitle').innerText = "请选择一个科学主题！";
+        }
+    </script>
+</body>
+</html>
