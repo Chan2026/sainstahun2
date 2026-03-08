@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KSSR 二年级科学：动物</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            background: #fdf2f8;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1200px;
+            padding: 15px;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        /* 左侧棋盘容器 */
+        .board-container {
+            flex: 1;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 10px solid #fbcfe8;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            padding: 10px;
+            gap: 6px;
+            max-height: calc(100vh - 30px);
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell {
+            position: relative;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+            border: 2px solid rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+
+        .cell-id {
+            position: absolute;
+            top: 4px;
+            left: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: rgba(0,0,0,0.3);
+        }
+
+        /* 玩家棋子 - 增加跳动动画 */
+        .p-token {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            pointer-events: none;
+            border: 3px solid white;
+        }
+
+        .p-blue { background: #60a5fa; }
+        .p-red { background: #f87171; }
+
+        /* 右侧长条面板 */
+        .control-panel {
+            width: 220px;
+            background: #ffffff;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 4px solid #fbcfe8;
+        }
+
+        .dice-btn {
+            width: 130px;
+            height: 130px;
+            background: #ec4899;
+            border-radius: 30px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #be185d;
+            margin: 30px 0;
+            transition: 0.1s;
+        }
+        .dice-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #be185d; }
+        .dice-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* 状态背景 */
+        .bg-odd { background: #fdf2f8; }
+        .bg-even { background: #fff7ed; }
+        .bg-ladder { border: 4px dashed #fbbf24; background: #fffbeb; }
+        .bg-snake { border: 4px dashed #f87171; background: #fef2f2; }
+        .bg-safe { background: #f0fdf4 !important; }
+
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 32px;
+            width: 450px;
+            text-align: center;
+            border: 8px solid #ec4899;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .opt-btn {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .opt-btn:hover { background: #fdf2f8; border-color: #ec4899; transform: scale(1.02); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- 左边大棋盘 -->
+    <div class="board-container" id="board">
+        <!-- 棋子 -->
+        <div id="p1" class="p-token p-blue">🐱</div>
+        <div id="p2" class="p-token p-red">🐰</div>
+    </div>
+
+    <!-- 右边直直长长的控制面板 -->
+    <div class="control-panel">
+        <h2 class="text-xl font-bold text-pink-600">二年级科学</h2>
+        <p class="text-sm text-pink-400">单元四：动物</p>
+        
+        <div class="w-full h-0.5 bg-pink-100 my-6"></div>
+
+        <div id="turn-display" class="text-lg font-bold py-3 px-5 rounded-2xl bg-blue-500 text-white shadow-md">
+            1号玩家行动
+        </div>
+
+        <button id="roll-btn" class="dice-btn">
+            <span id="dice-icon" class="text-6xl mb-1">🎲</span>
+            <span class="font-bold">投骰子</span>
+        </button>
+
+        <div class="space-y-4 w-full mt-auto">
+            <div class="bg-blue-50 p-3 rounded-xl border-l-4 border-blue-400">
+                <p class="text-xs text-blue-400">1号 蓝猫</p>
+                <p class="text-lg font-bold">第 <span id="p1-score">1</span> 格</p>
+            </div>
+            <div class="bg-red-50 p-3 rounded-xl border-l-4 border-red-400">
+                <p class="text-xs text-red-400">2号 红兔</p>
+                <p class="text-lg font-bold">第 <span id="p2-score">1</span> 格</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 答题框 -->
+<div id="quiz-modal" class="modal">
+    <div class="modal-content">
+        <div class="text-pink-500 text-lg font-bold mb-2">💡 知识挑战</div>
+        <h3 id="quiz-q" class="text-xl font-bold mb-6 text-gray-800"></h3>
+        <div id="quiz-options"></div>
+    </div>
+</div>
+
+<!-- 胜利框 -->
+<div id="win-modal" class="modal">
+    <div class="modal-content" style="border-color: #fbbf24;">
+        <h1 class="text-6xl mb-4">🏆</h1>
+        <h2 id="win-msg" class="text-2xl font-bold mb-6 text-gray-800"></h2>
+        <button onclick="location.reload()" class="bg-pink-500 text-white px-10 py-3 rounded-full font-bold shadow-lg">重新开始</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "哪些动物产下大量的卵？", o: ["老鼠、青蛙", "青蛙、乌龟", "猫、鸟"], c: 1 },
+        { q: "小猫的长相和妈妈相似吗？", o: ["相似", "不相似", "完全不同"], c: 0 },
+        { q: "哪些动物产下的幼儿数量较少？", o: ["鱼", "蝴蝶", "大象"], c: 2 },
+        { q: "青蛙的生命周期：卵 -> ? -> 幼蛙 -> 青蛙", o: ["蛹", "孑孓", "蝌蚪"], c: 2 },
+        { q: "母鸡如何保护它的孩子？", o: ["把孩子藏在嘴里", "攻击靠近的敌人", "把孩子丢下"], c: 1 },
+        { q: "蝴蝶的生命周期：卵 -> ? -> 蛹 -> 蝴蝶", o: ["毛毛虫", "小蝴蝶", "蝌蚪"], c: 0 },
+        { q: "哪些动物是胎生的？", o: ["鳄鱼", "猫、牛", "企鹅"], c: 1 },
+        { q: "哪些动物是卵生的？", o: ["鸭子、蛇", "兔子", "老虎"], c: 0 },
+        { q: "袋鼠妈妈如何保护孩子？", o: ["背着孩子", "把孩子放在育儿袋里", "让孩子自己走"], c: 1 },
+        { q: "小蝌蚪的长相和青蛙妈妈相似吗？", o: ["相似", "不相似", "完全一样"], c: 1 },
+        { q: "有些动物会把卵藏在泥土里，这是为了？", o: ["让卵更暖和", "保护卵不被敌人吃掉", "好玩"], c: 1 },
+        { q: "哪些动物产卵的数量很少？", o: ["蚊子", "鸟、企鹅", "蚂蚁"], c: 1 },
+        { q: "胎生动物通常产下的幼儿数量？", o: ["很多很多", "较少", "数不清"], c: 1 },
+        { q: "蜻蜓的幼虫叫作什么？", o: ["孑孓", "水虿", "蛆"], c: 1 },
+        { q: "母猫会给小猫喂食什么？", o: ["小鱼", "母乳", "青草"], c: 1 },
+        { q: "母象如何保护幼象？", o: ["群居并围在幼象身边", "让幼象自己生活", "把幼象藏在土里"], c: 0 },
+        { q: "穿山甲如何保护幼崽？", o: ["用壳把孩子包起来", "把孩子卷在尾巴上", "跑得很快"], c: 1 },
+        { q: "鳄鱼会把孩子放在哪里移动？", o: ["放在嘴巴里", "背在背上", "抱在怀里"], c: 0 }
+    ];
+
+    const mapConfig = {
+        3: { type: 'ladder', target: 11, icon: '🪜' },
+        8: { type: 'ladder', target: 16, icon: '🪜' },
+        15: { type: 'ladder', target: 26, icon: '🪜' },
+        12: { type: 'snake', target: 2, icon: '🐍' },
+        21: { type: 'snake', target: 9, icon: '🐍' },
+        28: { type: 'snake', target: 18, icon: '🐍' },
+        5: { type: 'safe', icon: '🛡️' },
+        20: { type: 'safe', icon: '🛡️' },
+        25: { type: 'safe', icon: '🛡️' }
+    };
+
+    let p1 = { id: 1, pos: 1, color: 'blue', el: document.getElementById('p1') };
+    let p2 = { id: 2, pos: 1, color: 'red', el: document.getElementById('p2') };
+    let currentPlayer = p1;
+    let isMoving = false;
+
+    // 初始化棋盘
+    function initBoard() {
+        const board = document.getElementById('board');
+        // 生成 30 格 (5行 6列)
+        for (let r = 4; r >= 0; r--) {
+            for (let c = 0; c < 6; c++) {
+                // S型路径逻辑
+                let id = (r % 2 === 0) ? (r * 6 + c + 1) : (r * 6 + (5 - c) + 1);
+                const cell = document.createElement('div');
+                cell.className = `cell ${id % 2 === 0 ? 'bg-even' : 'bg-odd'}`;
+                cell.id = `cell-${id}`;
+                cell.innerHTML = `<span class="cell-id">${id}</span>`;
+                
+                if (id === 1) cell.innerHTML += "🚩";
+                if (id === 30) cell.innerHTML += "🏁";
+                
+                if (mapConfig[id]) {
+                    cell.classList.add(`bg-${mapConfig[id].type}`);
+                    cell.innerHTML += `<span class="text-2xl">${mapConfig[id].icon}</span>`;
+                }
+                board.appendChild(cell);
+            }
+        }
+        // 小延迟确保 DOM 渲染完成
+        setTimeout(updatePositions, 100);
+    }
+
+    // 关键：更新棋子位置的函数
+    function updatePositions() {
+        [p1, p2].forEach(p => {
+            const cell = document.getElementById(`cell-${p.pos}`);
+            if (!cell) return;
+
+            // 获取格子中心坐标
+            const rect = cell.getBoundingClientRect();
+            const boardRect = document.getElementById('board').getBoundingClientRect();
+            
+            // 计算棋子位置
+            const centerX = rect.left - boardRect.left + (rect.width / 2);
+            const centerY = rect.top - boardRect.top + (rect.height / 2);
+            
+            // 两个玩家在同一格时偏移一下
+            const offsetX = p.id === 1 ? -15 : 15;
+            
+            p.el.style.left = `${centerX + offsetX - 22}px`;
+            p.el.style.top = `${centerY - 22}px`;
+            
+            document.getElementById(`p${p.id}-score`).innerText = p.pos;
+        });
+    }
+
+    async function doRoll() {
+        if (isMoving) return;
+        isMoving = true;
+        const btn = document.getElementById('roll-btn');
+        btn.disabled = true;
+
+        const roll = Math.floor(Math.random() * 6) + 1;
+        const icons = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+        document.getElementById('dice-icon').innerText = icons[roll-1];
+
+        // 动画：一步步跳动
+        for(let i=0; i<roll; i++) {
+            if (currentPlayer.pos < 30) {
+                currentPlayer.pos++;
+                updatePositions(); // 每次改变位置都调用刷新
+                await new Promise(r => setTimeout(r, 400)); // 跳动间隔
+            }
+        }
+
+        // 到达终点
+        if (currentPlayer.pos >= 30) {
+            showWin();
+            return;
+        }
+
+        // 答题逻辑 (每一格都要答题，除了起点和安全格)
+        const cellType = mapConfig[currentPlayer.pos]?.type;
+        if (cellType !== 'safe' && currentPlayer.pos > 1) {
+            const isCorrect = await askQuestion();
+            if (!isCorrect) {
+                // 答错退一格
+                currentPlayer.pos = Math.max(1, currentPlayer.pos - 1);
+                updatePositions();
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+
+        // 爬梯子或遇蛇
+        const special = mapConfig[currentPlayer.pos];
+        if (special && (special.type === 'ladder' || special.type === 'snake')) {
+            await new Promise(r => setTimeout(r, 600));
+            currentPlayer.pos = special.target;
+            updatePositions();
+        }
+
+        // 换人
+        currentPlayer = (currentPlayer === p1) ? p2 : p1;
+        const display = document.getElementById('turn-display');
+        display.innerText = `${currentPlayer.id}号玩家行动`;
+        display.className = `text-lg font-bold py-3 px-5 rounded-2xl shadow-md ${currentPlayer.id===1?'bg-blue-500':'bg-red-500'} text-white`;
+        
+        btn.disabled = false;
+        isMoving = false;
+    }
+
+    function askQuestion() {
+        return new Promise(resolve => {
+            const q = questions[Math.floor(Math.random() * questions.length)];
+            document.getElementById('quiz-q').innerText = q.q;
+            const box = document.getElementById('quiz-options');
+            box.innerHTML = '';
+            
+            q.o.forEach((opt, i) => {
+                const b = document.createElement('button');
+                b.className = 'opt-btn';
+                b.innerText = opt;
+                b.onclick = () => {
+                    document.getElementById('quiz-modal').style.display = 'none';
+                    resolve(i === q.c);
+                };
+                box.appendChild(b);
+            });
+            document.getElementById('quiz-modal').style.display = 'flex';
+        });
+    }
+
+    function showWin() {
+        document.getElementById('win-msg').innerText = `恭喜 ${currentPlayer.id}号玩家 (${currentPlayer.id===1?'蓝色':'红色'}) 获得胜利！`;
+        document.getElementById('win-modal').style.display = 'flex';
+    }
+
+    document.getElementById('roll-btn').onclick = doRoll;
+    window.onload = initBoard;
+    // 监听窗口缩放，防止棋子跑位
+    window.onresize = updatePositions;
+</script>
+
+</body>
+</html>
