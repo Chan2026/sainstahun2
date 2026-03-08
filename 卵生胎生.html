@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物繁殖分类小游戏</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f0f9ff;
+            touch-action: manipulation;
+        }
+        .cute-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        .animal-card {
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+        }
+        .animal-card:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        .drop-zone {
+            transition: all 0.3s;
+            min-height: 250px;
+        }
+        .drop-zone.drag-over {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+            transform: scale(1.02);
+        }
+        .success-animation {
+            animation: celebrate 0.5s ease-out;
+        }
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border-8 border-yellow-200">
+        <!-- Header -->
+        <div class="bg-yellow-400 p-6 text-center">
+            <h1 class="cute-font text-4xl md:text-5xl text-white drop-shadow-md">
+                🥚 动物繁殖大分类 🍼
+            </h1>
+            <p class="text-yellow-900 font-bold mt-2">帮动物宝宝找到正确的回家方式吧！</p>
+        </div>
+
+        <!-- Score & Reset -->
+        <div class="flex justify-between items-center p-4 bg-yellow-50 border-b-2 border-yellow-100">
+            <div class="text-2xl font-bold text-green-700">分数: <span id="score">0</span> / 10</div>
+            <button onclick="resetGame()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full font-bold transition">
+                重新开始
+            </button>
+        </div>
+
+        <div class="p-6">
+            <!-- Animal Pool -->
+            <div id="animal-pool" class="flex flex-wrap justify-center gap-4 mb-10 p-4 bg-blue-50 rounded-2xl border-2 border-dashed border-blue-200 min-h-[120px]">
+                <!-- Animals will be generated here -->
+            </div>
+
+            <!-- Drop Zones -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Oviparous Zone -->
+                <div id="oviparous" class="drop-zone border-4 border-emerald-400 rounded-3xl p-6 bg-emerald-50 text-center" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '卵生')">
+                    <h2 class="cute-font text-3xl text-emerald-700 mb-4">🥚 卵生 (Oviparous)</h2>
+                    <div class="flex flex-wrap justify-center gap-2" id="oviparous-list"></div>
+                </div>
+
+                <!-- Viviparous Zone -->
+                <div id="viviparous" class="drop-zone border-4 border-blue-400 rounded-3xl p-6 bg-blue-50 text-center" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '胎生')">
+                    <h2 class="cute-font text-3xl text-blue-700 mb-4">🍼 胎生 (Viviparous)</h2>
+                    <div class="flex flex-wrap justify-center gap-2" id="viviparous-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="success-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-3xl p-8 text-center max-w-sm w-full shadow-2xl">
+                <div class="text-6xl mb-4">🎉</div>
+                <h2 class="cute-font text-4xl text-green-600 mb-4">太棒了！</h2>
+                <p class="text-gray-600 mb-6 font-bold">你成功分类了所有动物！你是科学小达人！</p>
+                <button onclick="resetGame()" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold text-xl hover:bg-green-600">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const animals = [
+            { id: 1, name: '鸡', type: '卵生', icon: '🐔' },
+            { id: 2, name: '猫', type: '胎生', icon: '🐱' },
+            { id: 3, name: '乌龟', type: '卵生', icon: '🐢' },
+            { id: 4, name: '大象', type: '胎生', icon: '🐘' },
+            { id: 5, name: '青蛙', type: '卵生', icon: '🐸' },
+            { id: 6, name: '狗', type: '胎生', icon: '🐶' },
+            { id: 7, name: '鳄鱼', type: '卵生', icon: '🐊' },
+            { id: 8, name: '牛', type: '胎生', icon: '🐄' },
+            { id: 9, name: '蛇', type: '卵生', icon: '🐍' },
+            { id: 10, name: '海豚', type: '胎生', icon: '🐬' }
+        ];
+
+        let score = 0;
+        let draggedElement = null;
+
+        function initGame() {
+            const pool = document.getElementById('animal-pool');
+            pool.innerHTML = '';
+            score = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('oviparous-list').innerHTML = '';
+            document.getElementById('viviparous-list').innerHTML = '';
+            document.getElementById('success-modal').classList.add('hidden');
+
+            // Shuffle animals
+            const shuffled = [...animals].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(animal => {
+                const card = document.createElement('div');
+                card.className = 'animal-card bg-white p-4 rounded-2xl shadow-md border-2 border-gray-100 flex flex-col items-center justify-center w-24 h-24 text-center';
+                card.draggable = true;
+                card.id = `animal-${animal.id}`;
+                card.dataset.type = animal.type;
+                card.innerHTML = `
+                    <span class="text-4xl mb-1">${animal.icon}</span>
+                    <span class="font-bold text-gray-700">${animal.name}</span>
+                `;
+                
+                card.addEventListener('dragstart', (e) => {
+                    draggedElement = card;
+                    e.dataTransfer.setData('text/plain', animal.id);
+                    card.style.opacity = '0.5';
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.style.opacity = '1';
+                });
+
+                // Mobile Touch Support (Simple implementation)
+                card.ontouchstart = () => { draggedElement = card; };
+
+                pool.appendChild(card);
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, zoneType) {
+            e.preventDefault();
+            const dropZone = e.currentTarget;
+            dropZone.classList.remove('drag-over');
+
+            if (!draggedElement) return;
+
+            const animalType = draggedElement.dataset.type;
+
+            if (animalType === zoneType) {
+                // Correct
+                const listId = zoneType === '卵生' ? 'oviparous-list' : 'viviparous-list';
+                document.getElementById(listId).appendChild(draggedElement);
+                draggedElement.draggable = false;
+                draggedElement.classList.replace('w-24', 'w-20');
+                draggedElement.classList.replace('h-24', 'h-20');
+                draggedElement.classList.add('success-animation', 'border-green-300');
+                
+                score++;
+                document.getElementById('score').innerText = score;
+
+                // Play simple feedback (could add sound)
+                if (score === animals.length) {
+                    setTimeout(() => {
+                        document.getElementById('success-modal').classList.remove('hidden');
+                    }, 500);
+                }
+            } else {
+                // Wrong - Shake animation
+                draggedElement.classList.add('animate-bounce');
+                setTimeout(() => draggedElement.classList.remove('animate-bounce'), 500);
+                // Return to pool (automatic if not appended)
+                alert("再想一想，这个动物是这样出生的吗？");
+            }
+            draggedElement = null;
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        // Initialize on load
+        window.onload = initGame;
+    </script>
+</body>
+</html>
