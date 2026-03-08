@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二年级科学：动物的遗传 (P47)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f0fdf4;
+        }
+        
+        .kids-font { font-family: 'ZCOOL KuaiLe', cursive; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .game-card {
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 3px solid #10b981;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .game-card:hover { transform: translateY(-3px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .game-card.selected { border-color: #059669; background-color: #ecfdf5; box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.06); }
+        .game-card.matched { visibility: hidden; pointer-events: none; }
+        
+        .quiz-option {
+            width: 100%;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            text-align: left;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        .quiz-option:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+        .quiz-option.correct { background-color: #dcfce7; border-color: #22c55e; color: #166534; }
+        .quiz-option.wrong { background-color: #fee2e2; border-color: #ef4444; color: #991b1b; }
+    </style>
+</head>
+<body class="p-2 md:p-6">
+    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-green-200">
+        <!-- 头部 -->
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white text-center">
+            <h1 class="text-3xl md:text-4xl kids-font mb-2">🐾 动物的幼儿 🐾</h1>
+            <p class="text-lg opacity-90">Science Year 2 - 第 47 页 重点学习</p>
+        </div>
+
+        <!-- 导航 -->
+        <div class="flex bg-green-50 overflow-x-auto">
+            <button onclick="showTab('notes')" id="btn-notes" class="flex-1 min-w-[100px] py-4 px-2 font-bold border-b-4 border-green-600 text-green-700 bg-green-100">📖 学习重点</button>
+            <button onclick="showTab('game')" id="btn-game" class="flex-1 min-w-[100px] py-4 px-2 font-bold text-gray-500">🎮 连连看</button>
+            <button onclick="showTab('quiz')" id="btn-quiz" class="flex-1 min-w-[100px] py-4 px-2 font-bold text-gray-500">🏆 闯关挑战</button>
+        </div>
+
+        <!-- 1. 教学笔记 -->
+        <div id="notes" class="tab-content active p-6 md:p-10">
+            <div class="bg-yellow-50 p-6 rounded-3xl border-2 border-dashed border-yellow-400 mb-8">
+                <h2 class="text-2xl font-bold text-orange-700 mb-4 flex items-center">
+                    <span class="mr-2">📝</span> 科学重点 (第47页)
+                </h2>
+                <p class="text-xl leading-relaxed text-gray-800">
+                    有些动物的幼儿<strong>长得像</strong>妈妈，有些动物的幼儿则与妈妈<strong>长得不相似</strong>。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4 border-b-2 border-blue-200 pb-2">长得像妈妈的幼儿</h3>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="p-3 bg-white rounded-xl">🐘 小象 <br><span class="text-xs text-gray-400">Gajah</span></div>
+                        <div class="p-3 bg-white rounded-xl">🐄 小牛 <br><span class="text-xs text-gray-400">Lembu</span></div>
+                        <div class="p-3 bg-white rounded-xl">🐎 小马 <br><span class="text-xs text-gray-400">Kuda</span></div>
+                        <div class="p-3 bg-white rounded-xl">🐈 小猫 <br><span class="text-xs text-gray-400">Kucing</span></div>
+                    </div>
+                </div>
+                <div class="bg-pink-50 p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-xl font-bold text-pink-700 mb-4 border-b-2 border-pink-200 pb-2">长得不相似的幼儿</h3>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="p-3 bg-white rounded-xl">🐸 蝌蚪 <br><span class="text-xs text-gray-400">Berudu</span></div>
+                        <div class="p-3 bg-white rounded-xl">🦋 毛虫 <br><span class="text-xs text-gray-400">Beluncas</span></div>
+                        <div class="p-3 bg-white rounded-xl">🦟 孑孓 <br><span class="text-xs text-gray-400">Jentik-jentik</span></div>
+                        <div class="p-3 bg-white rounded-xl">🪰 蛆 <br><span class="text-xs text-gray-400">Berenga</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 配对游戏 -->
+        <div id="game" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-green-800">帮幼儿找妈妈！</h3>
+                    <p class="text-sm text-gray-500">Cari pasangan induk dan anaknya.</p>
+                </div>
+                <button onclick="initGame()" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition">换一组题目</button>
+            </div>
+            <div id="game-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <!-- 动态生成 -->
+            </div>
+            <div id="game-win" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">🌟</div>
+                <h2 class="text-3xl kids-font text-green-600 mb-4">全部答对！太棒了！</h2>
+                <button onclick="initGame()" class="bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg">再挑战一次</button>
+            </div>
+        </div>
+
+        <!-- 3. 知识闯关 -->
+        <div id="quiz" class="tab-content p-6">
+            <div id="quiz-container">
+                <div class="flex justify-between items-center mb-6">
+                    <span id="quiz-progress" class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">第 1 / 5 题</span>
+                    <span id="quiz-score-display" class="text-blue-700 font-bold">分数: 0</span>
+                </div>
+                <h2 id="quiz-question" class="text-2xl font-bold mb-8 text-gray-800 min-h-[60px]">题目加载中...</h2>
+                <div id="quiz-options" class="space-y-3">
+                    <!-- 选项 -->
+                </div>
+                <button id="next-quiz" onclick="nextQuestion()" class="hidden mt-8 w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-md">下一题 →</button>
+            </div>
+            <div id="quiz-result" class="hidden text-center py-16">
+                <div id="result-emoji" class="text-7xl mb-6">🏆</div>
+                <h2 class="text-4xl kids-font text-blue-600 mb-2">挑战完成！</h2>
+                <p id="final-score" class="text-2xl font-bold text-gray-600 mb-8 underline decoration-blue-300">最终得分: 0</p>
+                <button onclick="startQuiz()" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold text-xl shadow-xl hover:scale-105 transition-transform">重新闯关</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 数据池 ---
+        const animalsPool = [
+            { b: '🐛 毛虫', p: '🦋 蝴蝶', id: 1 },
+            { b: '🐟 蝌蚪', p: '🐸 青蛙', id: 2 },
+            { b: '🦟 孑孓', p: '🦟 蚊子', id: 3 },
+            { b: '🐛 蛆', p: '🪰 苍蝇', id: 4 },
+            { b: '🐣 小鸡', p: '🐔 鸡', id: 5 },
+            { b: '🐈 小猫', p: '🐱 猫', id: 6 },
+            { b: '🐘 小象', p: '🐘 大象', id: 7 },
+            { b: '🐄 小牛', p: '🐄 牛', id: 8 },
+            { b: '🐒 幼儿猴', p: '🐒 猴子妈妈', id: 9 },
+            { b: '🦒 幼儿长颈鹿', p: '🦒 长颈鹿妈妈', id: 10 }
+        ];
+
+        const questionsPool = [
+            { q: "根据第47页，哪种动物的幼儿【长得不相似】？", a: ["猫", "蝴蝶", "牛", "象"], c: 1 },
+            { q: "‘孑孓’是哪种动物的幼儿？", a: ["苍蝇", "青蛙", "蚊子", "蝴蝶"], c: 2 },
+            { q: "哪种动物的幼儿【长得像】妈妈？", a: ["蚊子", "青蛙", "长颈鹿", "苍蝇"], c: 2 },
+            { q: "‘毛虫’长大后会变成什么？", a: ["苍蝇", "蝴蝶", "蚊子", "蜻蜓"], c: 1 },
+            { q: "‘蝌蚪’是哪种动物的幼儿？", a: ["蛇", "鱼", "青蛙", "鳄鱼"], c: 2 },
+            { q: "科学课本中提到，动物长得像妈妈是一种什么现象？", a: ["成长", "遗传", "呼吸", "排泄"], c: 1 },
+            { q: "蛆是哪种动物的孩子？", a: ["蝴蝶", "苍蝇", "蜜蜂", "甲虫"], c: 1 },
+            { q: "下面哪组动物的幼儿和妈妈【长得像】？", a: ["青蛙-蝌蚪", "猫-小猫", "蚊子-孑孓", "蝴蝶-毛虫"], c: 1 }
+        ];
+
+        // --- 导航逻辑 ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            const btns = ['btn-notes', 'btn-game', 'btn-quiz'];
+            btns.forEach(b => {
+                const el = document.getElementById(b);
+                el.classList.remove('bg-green-100', 'border-b-4', 'border-green-600', 'text-green-700');
+                el.classList.add('text-gray-500');
+            });
+            
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-gray-500');
+            activeBtn.classList.add('bg-green-100', 'border-b-4', 'border-green-600', 'text-green-700');
+
+            if(tabId === 'game') initGame();
+            if(tabId === 'quiz') startQuiz();
+        }
+
+        // --- 配对游戏逻辑 ---
+        let selected = [];
+        let matched = 0;
+
+        function initGame() {
+            const grid = document.getElementById('game-grid');
+            const win = document.getElementById('game-win');
+            grid.innerHTML = '';
+            win.classList.add('hidden');
+            grid.classList.remove('hidden');
+            selected = [];
+            matched = 0;
+
+            // 抽取 4 对
+            const subset = [...animalsPool].sort(() => 0.5 - Math.random()).slice(0, 4);
+            const cards = [];
+            subset.forEach(item => {
+                cards.push({ text: item.b, id: item.id });
+                cards.push({ text: item.p, id: item.id });
+            });
+            cards.sort(() => 0.5 - Math.random());
+
+            cards.forEach(cardData => {
+                const div = document.createElement('div');
+                div.className = 'game-card shadow-sm';
+                div.innerHTML = `<span class="text-lg font-bold">${cardData.text}</span>`;
+                div.dataset.id = cardData.id;
+                div.onclick = () => handleSelect(div);
+                grid.appendChild(div);
+            });
+        }
+
+        function handleSelect(el) {
+            if (el.classList.contains('selected') || el.classList.contains('matched') || selected.length >= 2) return;
+            el.classList.add('selected');
+            selected.push(el);
+            if (selected.length === 2) {
+                setTimeout(checkMatch, 500);
+            }
+        }
+
+        function checkMatch() {
+            const [a, b] = selected;
+            if (a.dataset.id === b.dataset.id) {
+                a.classList.add('matched');
+                b.classList.add('matched');
+                matched++;
+                if (matched === 4) {
+                    document.getElementById('game-grid').classList.add('hidden');
+                    document.getElementById('game-win').classList.remove('hidden');
+                }
+            } else {
+                a.classList.remove('selected');
+                b.classList.remove('selected');
+            }
+            selected = [];
+        }
+
+        // --- 知识闯关逻辑 ---
+        let qIdx = 0;
+        let currentScore = 0;
+        let isAnswered = false;
+        let sessionQuestions = [];
+
+        function startQuiz() {
+            qIdx = 0;
+            currentScore = 0;
+            isAnswered = false;
+            sessionQuestions = [...questionsPool].sort(() => 0.5 - Math.random()).slice(0, 5);
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-score-display').innerText = `分数: 0`;
+            renderQ();
+        }
+
+        function renderQ() {
+            isAnswered = false;
+            const data = sessionQuestions[qIdx];
+            document.getElementById('quiz-progress').innerText = `第 ${qIdx + 1} / 5 题`;
+            document.getElementById('quiz-question').innerText = data.q;
+            document.getElementById('next-quiz').classList.add('hidden');
+            
+            const box = document.getElementById('quiz-options');
+            box.innerHTML = '';
+            
+            data.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option font-semibold shadow-sm';
+                btn.innerText = opt;
+                btn.onclick = () => handleQuizSelect(i, btn);
+                box.appendChild(btn);
+            });
+        }
+
+        function handleQuizSelect(i, btn) {
+            if (isAnswered) return;
+            isAnswered = true;
+            const correct = sessionQuestions[qIdx].c;
+            const options = document.querySelectorAll('.quiz-option');
+            
+            if (i === correct) {
+                btn.classList.add('correct');
+                currentScore += 20;
+                document.getElementById('quiz-score-display').innerText = `分数: ${currentScore}`;
+            } else {
+                btn.classList.add('wrong');
+                options[correct].classList.add('correct');
+            }
+            document.getElementById('next-quiz').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            qIdx++;
+            if (qIdx < 5) {
+                renderQ();
+            } else {
+                document.getElementById('quiz-container').classList.add('hidden');
+                document.getElementById('quiz-result').classList.remove('hidden');
+                document.getElementById('final-score').innerText = `最终得分: ${currentScore}`;
+                const emoji = document.getElementById('result-emoji');
+                if(currentScore >= 100) emoji.innerText = "👑";
+                else if(currentScore >= 60) emoji.innerText = "⭐";
+                else emoji.innerText = "💪";
+            }
+        }
+    </script>
+</body>
+</html>
