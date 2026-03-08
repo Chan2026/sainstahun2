@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产卵数量挑战赛</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #fff7ed;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        .cute-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        .animate-pop {
+            animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .timer-bar {
+            transition: width 0.1s linear;
+        }
+        .correct-flash {
+            animation: flash-green 0.4s;
+        }
+        .wrong-flash {
+            animation: flash-red 0.4s;
+        }
+        @keyframes flash-green {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(34, 197, 94, 0.2); }
+        }
+        @keyframes flash-red {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(239, 68, 68, 0.2); }
+        }
+        /* 针对超窄/短屏幕的微调 */
+        @media (max-height: 600px) {
+            #animal-icon { font-size: 60px; }
+            #animal-name { font-size: 32px; }
+            .btn-content { font-size: 20px; }
+            .btn-emoji { font-size: 30px; }
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- 状态栏 -->
+    <div class="bg-white shadow-sm p-3 flex justify-between items-center z-10">
+        <div class="flex items-center gap-4">
+            <!-- 返回首页按钮 (小屋子) -->
+            <a href="index.html" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-xl transition-colors text-2xl" title="返回首页">
+                🏠
+            </a>
+            <div class="h-8 w-[1px] bg-gray-200 mx-1"></div>
+            <div class="text-center">
+                <span class="text-[10px] font-bold text-gray-400 block uppercase">得分</span>
+                <span id="score" class="text-3xl font-black text-orange-600">0</span>
+            </div>
+            <div class="text-center">
+                <span class="text-[10px] font-bold text-gray-400 block uppercase">时间</span>
+                <span id="timer" class="text-3xl font-black text-blue-600">30</span><span class="text-blue-600 font-bold ml-1 text-sm">s</span>
+            </div>
+        </div>
+        <div class="text-right">
+            <h1 class="cute-font text-lg text-orange-500">产卵数量比拼</h1>
+            <p class="text-[10px] text-gray-400 font-bold">30秒极限赛</p>
+        </div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="w-full h-1.5 bg-gray-200">
+        <div id="progress" class="h-full bg-orange-500 timer-bar" style="width: 100%"></div>
+    </div>
+
+    <!-- 游戏区域 -->
+    <div id="game-body" class="flex-grow flex flex-col items-center justify-center p-4 gap-4">
+        
+        <!-- 问题卡片 -->
+        <div id="question-card" class="bg-white rounded-[25px] shadow-lg p-5 w-full max-w-xs text-center border-b-4 border-orange-200 animate-pop">
+            <div id="animal-icon" class="text-7xl leading-none mb-1">🐸</div>
+            <h2 id="animal-name" class="cute-font text-4xl mb-1 text-gray-800">青蛙</h2>
+            <div class="text-xs text-orange-600 font-bold bg-orange-50 inline-block px-3 py-0.5 rounded-full">
+                它的产卵数量多吗？
+            </div>
+        </div>
+
+        <!-- 操作按钮 - 紧凑型 -->
+        <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+            <button onclick="checkAnswer('多')" class="bg-emerald-500 hover:bg-emerald-600 text-white rounded-[25px] py-4 shadow-[0_6px_0_#059669] active:shadow-none active:translate-y-1 transition-all">
+                <div class="text-3xl mb-1 btn-emoji">🥚🥚🥚</div>
+                <div class="text-2xl cute-font btn-content">很多</div>
+                <div class="text-[10px] opacity-80 font-bold">BANYAK</div>
+            </button>
+            
+            <button onclick="checkAnswer('少')" class="bg-sky-500 hover:bg-sky-600 text-white rounded-[25px] py-4 shadow-[0_6px_0_#0284c7] active:shadow-none active:translate-y-1 transition-all">
+                <div class="text-3xl mb-1 btn-emoji">🥚</div>
+                <div class="text-2xl cute-font btn-content">较少</div>
+                <div class="text-[10px] opacity-80 font-bold">SEDIKIT</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- 开始遮罩 -->
+    <div id="overlay" class="fixed inset-0 bg-orange-500 z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-[35px] p-8 text-center shadow-2xl max-w-xs">
+            <!-- 遮罩层里的返回按钮 -->
+            <a href="index.html" class="absolute top-6 left-6 text-3xl bg-white/20 hover:bg-white/40 p-2 rounded-full text-white transition-all">🏠</a>
+            
+            <div class="text-6xl mb-4">⌛</div>
+            <h2 class="cute-font text-4xl text-orange-600 mb-2">30秒挑战</h2>
+            <p class="text-gray-500 mb-6 text-sm font-bold">根据课本P43知识：<br>快速判断产卵数量！</p>
+            <button onclick="startGame()" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-2xl text-2xl cute-font shadow-[0_6px_0_#c2410c] active:translate-y-1 active:shadow-none transition-all">
+                开始！
+            </button>
+        </div>
+    </div>
+
+    <!-- 结果遮罩 -->
+    <div id="result-overlay" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+        <div class="text-center w-full max-w-xs relative">
+            <h2 class="cute-font text-5xl text-orange-400 mb-6">时间到！</h2>
+            <div class="bg-white/10 rounded-2xl p-6 mb-8 border border-white/10">
+                <p class="text-lg text-gray-300 mb-1">最终得分</p>
+                <div class="text-7xl font-black text-white" id="final-score">0</div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-8">
+                <div class="bg-emerald-500/20 p-3 rounded-xl border border-emerald-500/30">
+                    <p class="text-emerald-400 font-bold text-[10px]">答对</p>
+                    <p id="correct-count" class="text-2xl font-black text-white">0</p>
+                </div>
+                <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                    <p class="text-gray-400 font-bold text-[10px]">准确率</p>
+                    <p id="accuracy" class="text-2xl font-black text-white">0%</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="location.reload()" class="w-full bg-white text-orange-600 py-4 rounded-xl text-xl font-black shadow-xl hover:bg-gray-100 transition-all">
+                    再玩一次
+                </button>
+                <a href="index.html" class="w-full bg-gray-700 text-white py-3 rounded-xl text-lg font-bold hover:bg-gray-600 transition-all">
+                    返回首页 🏠
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 基于课本P43的动物清单
+        const animals = [
+            { name: '青蛙', type: '多', icon: '🐸' },
+            { name: '鱼', type: '多', icon: '🐟' },
+            { name: '蚊子', type: '多', icon: '🦟' },
+            { name: '蝴蝶', type: '多', icon: '🦋' },
+            { name: '海龟', type: '多', icon: '🐢' },
+            { name: '小鸟', type: '少', icon: '🐦' },
+            { name: '鸵鸟', type: '少', icon: '🦩' }, 
+            { name: '企鹅', type: '少', icon: '🐧' },
+            { name: '天鹅', type: '少', icon: '🦢' },
+            { name: '猫头鹰', type: '少', icon: '🦉' }
+        ];
+
+        let score = 0;
+        let timeLeft = 30;
+        let gameActive = false;
+        let currentAnimal = null;
+        let timerInterval = null;
+        let totalAnswered = 0;
+        let correctCount = 0;
+
+        function startGame() {
+            document.getElementById('overlay').classList.add('hidden');
+            gameActive = true;
+            score = 0;
+            timeLeft = 30;
+            totalAnswered = 0;
+            correctCount = 0;
+            updateUI();
+            nextQuestion();
+            startTimer();
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = score;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    endGame();
+                }
+                document.getElementById('timer').innerText = Math.ceil(timeLeft);
+                document.getElementById('progress').style.width = (timeLeft / 30 * 100) + '%';
+            }, 100);
+        }
+
+        function nextQuestion() {
+            const card = document.getElementById('question-card');
+            card.classList.remove('animate-pop');
+            void card.offsetWidth; 
+            card.classList.add('animate-pop');
+
+            currentAnimal = animals[Math.floor(Math.random() * animals.length)];
+            document.getElementById('animal-icon').innerText = currentAnimal.icon;
+            document.getElementById('animal-name').innerText = currentAnimal.name;
+        }
+
+        function checkAnswer(choice) {
+            if (!gameActive) return;
+
+            totalAnswered++;
+            const body = document.getElementById('game-body');
+            
+            if (choice === currentAnimal.type) {
+                score += 10;
+                correctCount++;
+                body.classList.add('correct-flash');
+                setTimeout(() => body.classList.remove('correct-flash'), 400);
+            } else {
+                score = Math.max(0, score - 5);
+                body.classList.add('wrong-flash');
+                setTimeout(() => body.classList.remove('wrong-flash'), 400);
+            }
+            
+            updateUI();
+            nextQuestion();
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('correct-count').innerText = correctCount;
+            const acc = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+            document.getElementById('accuracy').innerText = acc + '%';
+            document.getElementById('result-overlay').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
