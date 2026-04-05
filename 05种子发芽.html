@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>种子发芽实验 - 对比观察</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+Happy&display=swap');
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ecfdf5;
+            touch-action: manipulation;
+        }
+
+        .pot-container {
+            background: #78350f;
+            border: 6px solid #451a03;
+            border-radius: 20px 20px 80px 80px;
+            position: relative;
+            height: 140px;
+            width: 140px;
+            margin: 0 auto;
+            overflow: hidden;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .pot-card {
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .pot-card.success {
+            border-color: #4ade80;
+            background-color: #f0fdf4;
+        }
+
+        .pot-card.fail {
+            border-color: #f87171;
+        }
+
+        .item-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            filter: grayscale(1);
+            opacity: 0.3;
+            transition: all 0.2s;
+        }
+
+        .item-icon.active {
+            filter: grayscale(0);
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .sprout {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            font-size: 3rem;
+            transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .sprout.show {
+            transform: translateX(-50%) scale(1);
+        }
+
+        .water-layer {
+            position: absolute;
+            inset: 0;
+            background: rgba(59, 130, 246, 0.2);
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-green-800">🌱 种子发芽对比实验台</h1>
+            <p class="text-gray-600 mt-2">二年级科学单元 5：设置三个不同的实验盆，看看谁能成功发芽！</p>
+        </header>
+
+        <!-- 实验盆区域 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            
+            <!-- 实验盆 A -->
+            <div id="pot-0" class="pot-card p-4 flex flex-col items-center shadow-lg">
+                <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-4">实验盆 A</span>
+                <div class="pot-container mb-4">
+                    <div class="water-layer" id="water-0"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-3xl" id="seed-0">🫘</div>
+                    <div class="sprout" id="sprout-0">🌱</div>
+                </div>
+                
+                <div class="flex gap-4 mb-4 bg-gray-100 p-3 rounded-xl">
+                    <button onclick="toggle(0, 'water')" id="icon-0-water" class="item-icon" title="水分">💧</button>
+                    <button onclick="toggle(0, 'air')" id="icon-0-air" class="item-icon" title="空气">🌬️</button>
+                    <button onclick="toggle(0, 'temp')" id="icon-0-temp" class="item-icon" title="适中温度">🌡️</button>
+                </div>
+                <div id="status-0" class="text-sm font-medium text-gray-500">等待设置...</div>
+            </div>
+
+            <!-- 实验盆 B -->
+            <div id="pot-1" class="pot-card p-4 flex flex-col items-center shadow-lg">
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-4">实验盆 B</span>
+                <div class="pot-container mb-4">
+                    <div class="water-layer" id="water-1"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-3xl" id="seed-1">🫘</div>
+                    <div class="sprout" id="sprout-1">🌱</div>
+                </div>
+                
+                <div class="flex gap-4 mb-4 bg-gray-100 p-3 rounded-xl">
+                    <button onclick="toggle(1, 'water')" id="icon-1-water" class="item-icon" title="水分">💧</button>
+                    <button onclick="toggle(1, 'air')" id="icon-1-air" class="item-icon" title="空气">🌬️</button>
+                    <button onclick="toggle(1, 'temp')" id="icon-1-temp" class="item-icon" title="适中温度">🌡️</button>
+                </div>
+                <div id="status-1" class="text-sm font-medium text-gray-500">等待设置...</div>
+            </div>
+
+            <!-- 实验盆 C -->
+            <div id="pot-2" class="pot-card p-4 flex flex-col items-center shadow-lg">
+                <span class="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-4">实验盆 C</span>
+                <div class="pot-container mb-4">
+                    <div class="water-layer" id="water-2"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-3xl" id="seed-2">🫘</div>
+                    <div class="sprout" id="sprout-2">🌱</div>
+                </div>
+                
+                <div class="flex gap-4 mb-4 bg-gray-100 p-3 rounded-xl">
+                    <button onclick="toggle(2, 'water')" id="icon-2-water" class="item-icon" title="水分">💧</button>
+                    <button onclick="toggle(2, 'air')" id="icon-2-air" class="item-icon" title="空气">🌬️</button>
+                    <button onclick="toggle(2, 'temp')" id="icon-2-temp" class="item-icon" title="适中温度">🌡️</button>
+                </div>
+                <div id="status-2" class="text-sm font-medium text-gray-500">等待设置...</div>
+            </div>
+
+        </div>
+
+        <!-- 说明区 -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border-l-8 border-green-500">
+            <h3 class="text-xl font-bold text-green-800 mb-2">实验小贴士：</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-1">
+                <li>点亮下方的图标来为种子提供环境要素。</li>
+                <li>只有满足全部 3 个基本需求的盆，种子才会成功发芽。</li>
+                <li>观察三个盆的不同，学习为什么有些种子会失败。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 初始化三个盆的状态
+        const pots = [
+            { water: false, air: false, temp: false },
+            { water: false, air: false, temp: false },
+            { water: false, air: false, temp: false }
+        ];
+
+        function toggle(potIndex, type) {
+            pots[potIndex][type] = !pots[potIndex][type];
+            
+            // 更新图标显示
+            const icon = document.getElementById(`icon-${potIndex}-${type}`);
+            if (pots[potIndex][type]) {
+                icon.classList.add('active');
+            } else {
+                icon.classList.remove('active');
+            }
+
+            // 更新水分视觉效果
+            if (type === 'water') {
+                document.getElementById(`water-${potIndex}`).style.display = pots[potIndex].water ? 'block' : 'none';
+            }
+
+            updatePot(potIndex);
+        }
+
+        function updatePot(i) {
+            const potState = pots[i];
+            const sprout = document.getElementById(`sprout-${i}`);
+            const seed = document.getElementById(`seed-${i}`);
+            const status = document.getElementById(`status-${i}`);
+            const card = document.getElementById(`pot-${i}`);
+
+            const hasWater = potState.water;
+            const hasAir = potState.air;
+            const hasTemp = potState.temp;
+
+            if (hasWater && hasAir && hasTemp) {
+                // 成功发芽
+                sprout.classList.add('show');
+                seed.style.opacity = '0';
+                status.innerText = "✅ 成功发芽！";
+                status.className = "text-sm font-bold text-green-600";
+                card.classList.add('success');
+                card.classList.remove('fail');
+            } else {
+                // 未发芽
+                sprout.classList.remove('show');
+                seed.style.opacity = '1';
+                card.classList.remove('success');
+                
+                // 判断是否是"失败"（即操作了但没满足条件）
+                if (hasWater || hasAir || hasTemp) {
+                    status.innerText = "❌ 无法发芽";
+                    status.className = "text-sm font-bold text-red-500";
+                    card.classList.add('fail');
+                } else {
+                    status.innerText = "等待设置...";
+                    status.className = "text-sm font-medium text-gray-500";
+                    card.classList.remove('fail');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
