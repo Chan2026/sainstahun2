@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光的奇妙旅程 - 互动学习游戏</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #fbbf24;
+            --text-color: #f8fafc;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航 */
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(to bottom, #1e293b, #0f172a);
+            width: 100%;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 80%;
+            max-width: 600px;
+            height: 10px;
+            background: #334155;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 33%;
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        /* 游戏容器 */
+        .game-canvas {
+            width: 90%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 拖拽关卡样式 */
+        .drag-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .drop-zones {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .zone {
+            border: 3px dashed #475569;
+            border-radius: 15px;
+            padding: 1.5rem;
+            min-height: 150px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .zone.drag-over {
+            border-color: var(--accent-color);
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .zone h3 { margin-top: 0; color: var(--accent-color); }
+
+        .items-pool {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            background: #0f172a;
+            padding: 1.5rem;
+            border-radius: 15px;
+        }
+
+        .draggable-item {
+            background: #334155;
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            cursor: grab;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #475569;
+        }
+
+        .draggable-item:active { cursor: grabbing; }
+
+        /* 影子实验室样式 */
+        .lab-box {
+            position: relative;
+            height: 300px;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            border: 2px solid #334155;
+        }
+
+        .light-beam {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(90deg, rgba(251,191,36,0.8) 0%, rgba(251,191,36,0) 100%);
+            pointer-events: none;
+        }
+
+        #object {
+            position: absolute;
+            left: 40%;
+            width: 80px;
+            height: 120px;
+            background: #ef4444;
+            cursor: ew-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        #shadow {
+            position: absolute;
+            left: 40%; /* 动态随物体 */
+            width: 200px; /* 投射到后墙 */
+            height: 120px;
+            background: rgba(255,255,255,0.05); /* 模拟投影 */
+            filter: blur(2px);
+            z-index: 5;
+            transform-origin: left;
+        }
+
+        .wall {
+            position: absolute;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: #475569;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(251, 191, 36, 0.4); }
+        .btn:disabled { background: #475569; cursor: not-allowed; }
+
+        /* 结果反馈 */
+        .feedback {
+            margin-top: 1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+        }
+        .correct { color: var(--success-color); }
+        .wrong { color: var(--error-color); }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .drop-zones { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🔦 光的奇妙旅程</h1>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="game-canvas">
+        <!-- 关卡 1: 分类 -->
+        <div class="step active" id="step1">
+            <h2>关卡 1: 寻找真正的光源</h2>
+            <p>光源是<strong>能发光</strong>的物体。请将下列物体拖入正确的分类框中：</p>
+            
+            <div class="drag-section">
+                <div class="drop-zones">
+                    <div class="zone" id="sourceZone" ondrop="handleDrop(event, true)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <h3>🌟 是光源</h3>
+                    </div>
+                    <div class="zone" id="notSourceZone" ondrop="handleDrop(event, false)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <h3>🚫 不是光源</h3>
+                    </div>
+                </div>
+
+                <div class="items-pool" id="itemsPool">
+                    <!-- 数据驱动生成 -->
+                </div>
+            </div>
+            <div class="feedback" id="feedback1"></div>
+            <button class="btn" id="btnNext1" disabled onclick="goToStep(2)">进入下一关</button>
+        </div>
+
+        <!-- 关卡 2: 影子实验 -->
+        <div class="step" id="step2">
+            <h2>关卡 2: 影子实验室</h2>
+            <p>当光被物体阻挡时，就会形成影子。试着左右<strong>移动红色的卡纸</strong>：</p>
+            
+            <div class="lab-box" id="labBox">
+                <div class="light-beam" style="top: 120px;"></div>
+                <div id="object" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">卡纸</div>
+                <div id="shadow"></div>
+                <div class="wall" style="right: 0;"></div>
+            </div>
+
+            <div style="margin-top: 1.5rem; line-height: 1.6;">
+                <p>💡 <strong>科学发现：</strong><br>
+                1. 只有<strong>不能让光透过</strong>的物体（如卡纸）才能形成清晰的影子。<br>
+                2. 物体离光源越近，影子就越<strong>大</strong>。</p>
+            </div>
+            
+            <button class="btn" onclick="goToStep(3)">完成实验</button>
+        </div>
+
+        <!-- 关卡 3: 生活应用 -->
+        <div class="step" id="step3">
+            <h2>关卡 3: 光的重要性</h2>
+            <p>为什么我们需要光？根据图片提示选择正确的答案：</p>
+            
+            <div class="drag-section">
+                <div class="quiz-item">
+                    <p><strong>1. 光的主要作用是：</strong></p>
+                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left;" onclick="checkQuiz(this, true)">A. 使周围明亮，让我们看清物体</button>
+                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left; margin-top:0.5rem;" onclick="checkQuiz(this, false)">B. 只是为了好看</button>
+                </div>
+                
+                <div class="quiz-item">
+                    <p><strong>2. 在黑暗中，我们较难进行活动。充足的光线可以：</strong></p>
+                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left;" onclick="checkQuiz(this, true)">A. 减少意外发生</button>
+                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left; margin-top:0.5rem;" onclick="checkQuiz(this, false)">B. 增加影子数量</button>
+                </div>
+            </div>
+
+            <div class="feedback" id="feedback3"></div>
+            <button class="btn" id="finishBtn" disabled onclick="finishGame()">领取勋章</button>
+        </div>
+
+        <!-- 结束 -->
+        <div class="step" id="step4">
+            <div style="text-align: center;">
+                <h2 style="color: var(--accent-color);">🎉 恭喜通关！</h2>
+                <p style="font-size: 1.2rem;">你现在是“小小光学专家”了！</p>
+                <div style="font-size: 5rem; margin: 2rem;">🏆</div>
+                <button class="btn" onclick="location.reload()">重新开始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏数据
+        const itemsData = [
+            { id: 'i1', name: '☀️ 太阳', isLight: true },
+            { id: 'i2', name: '🌙 月亮', isLight: false },
+            { id: 'i3', name: '💡 灯泡', isLight: true },
+            { id: 'i4', name: '🪞 镜子', isLight: false },
+            { id: 'i5', name: '🔥 火堆', isLight: true },
+            { id: 'i6', name: '🌊 水面', isLight: false },
+            { id: 'i7', name: '🔦 手电筒', isLight: true },
+            { id: 'i8', name: '🕯️ 烛火', isLight: true }
+        ];
+
+        let correctDrops = 0;
+        let quizScore = 0;
+
+        // 初始化关卡1
+        function initLevel1() {
+            const pool = document.getElementById('itemsPool');
+            itemsData.sort(() => Math.random() - 0.5).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'draggable-item';
+                div.id = item.id;
+                div.draggable = true;
+                div.innerText = item.name;
+                div.ondragstart = (e) => e.dataTransfer.setData('text', e.target.id);
+                pool.appendChild(div);
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, zoneIsLight) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text');
+            const item = itemsData.find(i => i.id === id);
+            const feedback = document.getElementById('feedback1');
+            
+            e.currentTarget.classList.remove('drag-over');
+
+            if (item.isLight === zoneIsLight) {
+                e.currentTarget.appendChild(document.getElementById(id));
+                document.getElementById(id).draggable = false;
+                document.getElementById(id).style.background = '#065f46';
+                correctDrops++;
+                feedback.innerHTML = '<span class="correct">✔ 正确！</span>';
+            } else {
+                feedback.innerHTML = `<span class="wrong">✘ 错误。${item.name}本身不会发光。</span>`;
+            }
+
+            if (correctDrops === itemsData.length) {
+                document.getElementById('btnNext1').disabled = false;
+                feedback.innerHTML = '<span class="correct">全部正确！你太棒了！</span>';
+            }
+        }
+
+        // 关卡2：影子实验室逻辑
+        let isDragging = false;
+        function startDrag(e) {
+            isDragging = true;
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function onMove(e) {
+            if (!isDragging) return;
+            const lab = document.getElementById('labBox');
+            const obj = document.getElementById('object');
+            const shadow = document.getElementById('shadow');
+            const rect = lab.getBoundingClientRect();
+            
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let x = clientX - rect.left - 40; // 居中
+            
+            if (x < 50) x = 50;
+            if (x > rect.width - 150) x = rect.width - 150;
+
+            obj.style.left = x + 'px';
+            
+            // 影子逻辑：离左侧(光源)越近，影子越大
+            // 影子位置在物体右侧延伸到墙
+            shadow.style.left = (x + 80) + 'px';
+            let distanceToSource = x; 
+            let scale = 1 + (150 / distanceToSource);
+            shadow.style.transform = `scaleY(${scale})`;
+            shadow.style.width = (rect.width - x - 80) + 'px';
+            shadow.style.background = `rgba(0,0,0,${0.3 + (distanceToSource/1000)})`;
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        // 关卡3：问答
+        function checkQuiz(btn, isCorrect) {
+            const feedback = document.getElementById('feedback3');
+            if (isCorrect) {
+                btn.style.background = '#059669';
+                quizScore++;
+                feedback.innerHTML = '<span class="correct">回答正确！</span>';
+            } else {
+                btn.style.background = '#991b1b';
+                feedback.innerHTML = '<span class="wrong">再想想看？</span>';
+            }
+
+            if (quizScore >= 2) {
+                document.getElementById('finishBtn').disabled = false;
+            }
+        }
+
+        // 导航逻辑
+        function goToStep(num) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + num).classList.add('active');
+            document.getElementById('progressBar').style.width = (num * 25) + '%';
+        }
+
+        function finishGame() {
+            goToStep(4);
+        }
+
+        // 初始化
+        window.onload = () => {
+            initLevel1();
+            // 初始影子状态
+            onMove({clientX: 400});
+            isDragging = false;
+        };
+    </script>
+</body>
+</html>
