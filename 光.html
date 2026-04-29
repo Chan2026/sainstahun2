@@ -3,447 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>光的奇妙旅程 - 互动学习游戏</title>
+    <title>小小光影魔术师 - 互动实验室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #fbbf24;
-            --text-color: #f8fafc;
-            --success-color: #22c55e;
-            --error-color: #ef4444;
-        }
-
         body {
+            background-color: #1a202c;
+            color: white;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            touch-action: manipulation;
         }
-
-        /* 顶部导航 */
-        .header {
-            text-align: center;
-            padding: 2rem;
-            background: linear-gradient(to bottom, #1e293b, #0f172a);
-            width: 100%;
-            border-bottom: 2px solid var(--accent-color);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2rem;
-            color: var(--accent-color);
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-        }
-
-        /* 进度条 */
-        .progress-container {
-            width: 80%;
-            max-width: 600px;
-            height: 10px;
-            background: #334155;
-            border-radius: 5px;
-            margin: 1rem 0;
-        }
-
-        .progress-bar {
-            width: 33%;
-            height: 100%;
-            background: var(--accent-color);
-            border-radius: 5px;
-            transition: width 0.5s ease;
-        }
-
-        /* 游戏容器 */
         .game-canvas {
-            width: 90%;
-            max-width: 800px;
-            background: var(--card-bg);
-            padding: 2rem;
+            background: linear-gradient(to bottom, #2d3748, #1a202c);
+            border: 4px solid #4a5568;
             border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .step { display: none; }
-        .step.active { display: block; animation: fadeIn 0.5s ease; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 拖拽关卡样式 */
-        .drag-section {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .drop-zones {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .zone {
-            border: 3px dashed #475569;
-            border-radius: 15px;
-            padding: 1.5rem;
-            min-height: 150px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .zone.drag-over {
-            border-color: var(--accent-color);
-            background: rgba(251, 191, 36, 0.1);
-        }
-
-        .zone h3 { margin-top: 0; color: var(--accent-color); }
-
-        .items-pool {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem;
-            background: #0f172a;
-            padding: 1.5rem;
-            border-radius: 15px;
-        }
-
-        .draggable-item {
-            background: #334155;
-            padding: 0.8rem 1.2rem;
-            border-radius: 10px;
-            cursor: grab;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: 1px solid #475569;
-        }
-
-        .draggable-item:active { cursor: grabbing; }
-
-        /* 影子实验室样式 */
-        .lab-box {
             position: relative;
-            height: 300px;
-            background: #000;
-            border-radius: 15px;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            border: 2px solid #334155;
+            height: 450px;
         }
-
+        .source-item {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .source-item:hover {
+            transform: scale(1.1);
+        }
         .light-beam {
             position: absolute;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: linear-gradient(90deg, rgba(251,191,36,0.8) 0%, rgba(251,191,36,0) 100%);
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 120px;
+            background: rgba(255, 255, 150, 0.4);
+            box-shadow: 0 0 40px rgba(255, 255, 100, 0.3);
+            z-index: 1;
+            clip-path: polygon(0 45%, 100% 0, 100% 100%, 0 55%);
+            transition: width 0.5s;
+        }
+        #shadow-cast {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            filter: blur(2px);
+            transition: all 0.1s;
             pointer-events: none;
         }
-
-        #object {
-            position: absolute;
-            left: 40%;
-            width: 80px;
-            height: 120px;
-            background: #ef4444;
-            cursor: ew-resize;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border-radius: 4px;
+        .draggable {
+            cursor: grab;
+            user-select: none;
             z-index: 10;
         }
-
-        #shadow {
-            position: absolute;
-            left: 40%; /* 动态随物体 */
-            width: 200px; /* 投射到后墙 */
-            height: 120px;
-            background: rgba(255,255,255,0.05); /* 模拟投影 */
-            filter: blur(2px);
-            z-index: 5;
-            transform-origin: left;
+        .draggable:active {
+            cursor: grabbing;
         }
-
-        .wall {
-            position: absolute;
-            right: 0;
-            width: 20px;
-            height: 100%;
-            background: #475569;
+        .nav-btn {
+            @apply px-4 py-2 rounded-full font-bold transition duration-300;
         }
-
-        /* 按钮样式 */
-        .btn {
-            background: var(--accent-color);
-            color: #000;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 1.5rem;
+        .active-nav {
+            @apply bg-yellow-500 text-black;
         }
-
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(251, 191, 36, 0.4); }
-        .btn:disabled { background: #475569; cursor: not-allowed; }
-
-        /* 结果反馈 */
-        .feedback {
-            margin-top: 1rem;
-            font-weight: bold;
-            min-height: 1.5rem;
+        .inactive-nav {
+            @apply bg-gray-700 text-white hover:bg-gray-600;
         }
-        .correct { color: var(--success-color); }
-        .wrong { color: var(--error-color); }
-
-        /* 响应式 */
-        @media (max-width: 600px) {
-            .drop-zones { grid-template-columns: 1fr; }
+        /* 亮背景样式 */
+        .bright-bg {
+            background-color: #f7fafc !important;
+            background-image: radial-gradient(#cbd5e0 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-extrabold text-yellow-400 mb-2">🔦 小小光影魔术师</h1>
+            <p class="text-gray-400">让我们通过实验，揭开影子的秘密吧！</p>
+        </header>
 
-    <div class="header">
-        <h1>🔦 光的奇妙旅程</h1>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-    </div>
+        <!-- 导航 -->
+        <nav class="flex justify-center space-x-2 mb-6">
+            <button onclick="switchTab('tab1')" id="btn-tab1" class="nav-btn active-nav">1. 谁是光源？</button>
+            <button onclick="switchTab('tab2')" id="btn-tab2" class="nav-btn inactive-nav">2. 影子实验室</button>
+            <button onclick="switchTab('tab3')" id="btn-tab3" class="nav-btn inactive-nav">3. 穿透力挑战</button>
+        </nav>
 
-    <div class="game-canvas">
-        <!-- 关卡 1: 分类 -->
-        <div class="step active" id="step1">
-            <h2>关卡 1: 寻找真正的光源</h2>
-            <p>光源是<strong>能发光</strong>的物体。请将下列物体拖入正确的分类框中：</p>
+        <!-- 游戏区域 -->
+        <div id="game-container" class="game-canvas shadow-2xl relative">
             
-            <div class="drag-section">
-                <div class="drop-zones">
-                    <div class="zone" id="sourceZone" ondrop="handleDrop(event, true)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <h3>🌟 是光源</h3>
-                    </div>
-                    <div class="zone" id="notSourceZone" ondrop="handleDrop(event, false)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <h3>🚫 不是光源</h3>
-                    </div>
+            <!-- 场景1：辨别光源 -->
+            <div id="tab1" class="p-8 h-full flex flex-col items-center">
+                <h2 class="text-xl mb-6 text-yellow-200">点击能【自己发光】的物体：</h2>
+                <div class="grid grid-cols-3 gap-8 md:gap-16">
+                    <div onclick="checkSource(true, '太阳是巨大的天然光源！')" class="source-item text-6xl text-center">☀️<p class="text-sm mt-2 text-white">太阳</p></div>
+                    <div onclick="checkSource(false, '月亮只是反射太阳光，它不是光源。')" class="source-item text-6xl text-center">🌙<p class="text-sm mt-2 text-white">月亮</p></div>
+                    <div onclick="checkSource(true, '打开的手电筒是光源。')" class="source-item text-6xl text-center">🔦<p class="text-sm mt-2 text-white">手电筒</p></div>
+                    <div onclick="checkSource(false, '镜子很亮，但它是反射别人的光。')" class="source-item text-6xl text-center">🪞<p class="text-sm mt-2 text-white">镜子</p></div>
+                    <div onclick="checkSource(true, '小萤火虫也会自己发光哦！')" class="source-item text-6xl text-center">🐝<p class="text-sm mt-2 text-white">萤火虫</p></div>
+                    <div onclick="checkSource(false, '书本需要光才能看见，它不发光。')" class="source-item text-6xl text-center">📖<p class="text-sm mt-2 text-white">书本</p></div>
                 </div>
-
-                <div class="items-pool" id="itemsPool">
-                    <!-- 数据驱动生成 -->
-                </div>
-            </div>
-            <div class="feedback" id="feedback1"></div>
-            <button class="btn" id="btnNext1" disabled onclick="goToStep(2)">进入下一关</button>
-        </div>
-
-        <!-- 关卡 2: 影子实验 -->
-        <div class="step" id="step2">
-            <h2>关卡 2: 影子实验室</h2>
-            <p>当光被物体阻挡时，就会形成影子。试着左右<strong>移动红色的卡纸</strong>：</p>
-            
-            <div class="lab-box" id="labBox">
-                <div class="light-beam" style="top: 120px;"></div>
-                <div id="object" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">卡纸</div>
-                <div id="shadow"></div>
-                <div class="wall" style="right: 0;"></div>
+                <div id="feedback1" class="mt-8 text-lg font-bold text-center h-8"></div>
             </div>
 
-            <div style="margin-top: 1.5rem; line-height: 1.6;">
-                <p>💡 <strong>科学发现：</strong><br>
-                1. 只有<strong>不能让光透过</strong>的物体（如卡纸）才能形成清晰的影子。<br>
-                2. 物体离光源越近，影子就越<strong>大</strong>。</p>
-            </div>
-            
-            <button class="btn" onclick="goToStep(3)">完成实验</button>
-        </div>
-
-        <!-- 关卡 3: 生活应用 -->
-        <div class="step" id="step3">
-            <h2>关卡 3: 光的重要性</h2>
-            <p>为什么我们需要光？根据图片提示选择正确的答案：</p>
-            
-            <div class="drag-section">
-                <div class="quiz-item">
-                    <p><strong>1. 光的主要作用是：</strong></p>
-                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left;" onclick="checkQuiz(this, true)">A. 使周围明亮，让我们看清物体</button>
-                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left; margin-top:0.5rem;" onclick="checkQuiz(this, false)">B. 只是为了好看</button>
+            <!-- 场景2：影子实验室 -->
+            <div id="tab2" class="hidden h-full relative bg-gray-100">
+                <div class="absolute top-4 left-4 text-gray-800 z-20">
+                    <p class="font-bold">⬅️ 左右拖动红色物体</p>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="changeShape('square')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">方块</button>
+                        <button onclick="changeShape('circle')" class="bg-green-600 text-white px-3 py-1 rounded text-sm">球体</button>
+                    </div>
                 </div>
                 
-                <div class="quiz-item">
-                    <p><strong>2. 在黑暗中，我们较难进行活动。充足的光线可以：</strong></p>
-                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left;" onclick="checkQuiz(this, true)">A. 减少意外发生</button>
-                    <button class="btn" style="background:#334155; color:white; width:100%; text-align:left; margin-top:0.5rem;" onclick="checkQuiz(this, false)">B. 增加影子数量</button>
+                <!-- 手电筒 -->
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-5xl z-20">🔦</div>
+                <div class="light-beam" id="beam2" style="width: 800px; opacity: 0.5;"></div>
+                
+                <!-- 拖动物体 -->
+                <div id="block" class="draggable absolute w-16 h-16 bg-red-600 rounded shadow-lg" style="left: 200px; top: 192px;"></div>
+                
+                <!-- 墙壁背景 -->
+                <div class="absolute right-0 top-0 w-32 h-full bg-gray-300 border-l-4 border-gray-400"></div>
+                
+                <!-- 影子 -->
+                <div id="shadow-cast"></div>
+                
+                <div class="absolute bottom-4 w-full text-center text-gray-700 font-bold">
+                    当物体【遮挡】光线时，影子就形成了！
                 </div>
             </div>
 
-            <div class="feedback" id="feedback3"></div>
-            <button class="btn" id="finishBtn" disabled onclick="finishGame()">领取勋章</button>
+            <!-- 场景3：穿透力挑战 (已改为亮色背景) -->
+            <div id="tab3" class="hidden h-full relative bright-bg">
+                <div class="absolute top-4 left-4 text-gray-800 z-20">
+                    <p class="font-bold">选择挡在光面前的材料：</p>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="setMaterial('clear')" class="bg-blue-400 text-white px-3 py-1 rounded-md font-bold shadow-sm">1. 透明玻璃</button>
+                        <button onclick="setMaterial('frosted')" class="bg-gray-500 text-white px-3 py-1 rounded-md font-bold shadow-sm">2. 磨砂纸</button>
+                        <button onclick="setMaterial('solid')" class="bg-yellow-800 text-white px-3 py-1 rounded-md font-bold shadow-sm">3. 厚木板</button>
+                    </div>
+                </div>
+
+                <!-- 手电筒 -->
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-5xl z-20">🔦</div>
+                <div id="beam3" class="light-beam" style="width: 800px; opacity: 0.6; background: rgba(255, 255, 100, 0.4);"></div>
+                
+                <!-- 材料显示 -->
+                <div id="material-box" class="absolute w-10 h-40 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 border-4 border-gray-400 transition-all duration-500 z-10" style="background: rgba(255,255,255,0.3);"></div>
+                
+                <!-- 墙上的影子结果 -->
+                <div class="absolute right-0 top-0 w-32 h-full bg-gray-200 border-l-4 border-gray-300"></div>
+                <div id="wall-result" class="absolute right-4 top-1/2 -translate-y-1/2 w-24 h-48 bg-black opacity-0 transition-all duration-500 rounded-sm flex items-center justify-center text-center p-2">
+                    <span id="material-text" class="text-white font-bold text-sm"></span>
+                </div>
+
+                <div class="absolute bottom-4 w-full text-center text-gray-700 px-4 font-bold">
+                    <span id="material-desc">光能穿过这些材料吗？点击上方按钮试一试！</span>
+                </div>
+            </div>
+
         </div>
 
-        <!-- 结束 -->
-        <div class="step" id="step4">
-            <div style="text-align: center;">
-                <h2 style="color: var(--accent-color);">🎉 恭喜通关！</h2>
-                <p style="font-size: 1.2rem;">你现在是“小小光学专家”了！</p>
-                <div style="font-size: 5rem; margin: 2rem;">🏆</div>
-                <button class="btn" onclick="location.reload()">重新开始</button>
-            </div>
-        </div>
+        <footer class="mt-6 text-center text-sm text-gray-500">
+            二年级科学课：光与影子实验互动课件
+        </footer>
     </div>
 
     <script>
-        // 游戏数据
-        const itemsData = [
-            { id: 'i1', name: '☀️ 太阳', isLight: true },
-            { id: 'i2', name: '🌙 月亮', isLight: false },
-            { id: 'i3', name: '💡 灯泡', isLight: true },
-            { id: 'i4', name: '🪞 镜子', isLight: false },
-            { id: 'i5', name: '🔥 火堆', isLight: true },
-            { id: 'i6', name: '🌊 水面', isLight: false },
-            { id: 'i7', name: '🔦 手电筒', isLight: true },
-            { id: 'i8', name: '🕯️ 烛火', isLight: true }
-        ];
-
-        let correctDrops = 0;
-        let quizScore = 0;
-
-        // 初始化关卡1
-        function initLevel1() {
-            const pool = document.getElementById('itemsPool');
-            itemsData.sort(() => Math.random() - 0.5).forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'draggable-item';
-                div.id = item.id;
-                div.draggable = true;
-                div.innerText = item.name;
-                div.ondragstart = (e) => e.dataTransfer.setData('text', e.target.id);
-                pool.appendChild(div);
+        // 切换标签页
+        function switchTab(tabId) {
+            ['tab1', 'tab2', 'tab3'].forEach(t => {
+                document.getElementById(t).classList.add('hidden');
+                document.getElementById('btn-' + t).classList.replace('active-nav', 'inactive-nav');
             });
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleDrop(e, zoneIsLight) {
-            e.preventDefault();
-            const id = e.dataTransfer.getData('text');
-            const item = itemsData.find(i => i.id === id);
-            const feedback = document.getElementById('feedback1');
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.replace('inactive-nav', 'active-nav');
             
-            e.currentTarget.classList.remove('drag-over');
+            if(tabId === 'tab2') initShadowLab();
+        }
 
-            if (item.isLight === zoneIsLight) {
-                e.currentTarget.appendChild(document.getElementById(id));
-                document.getElementById(id).draggable = false;
-                document.getElementById(id).style.background = '#065f46';
-                correctDrops++;
-                feedback.innerHTML = '<span class="correct">✔ 正确！</span>';
+        // 场景1逻辑
+        function checkSource(isCorrect, msg) {
+            const fb = document.getElementById('feedback1');
+            fb.innerText = msg;
+            fb.className = "mt-8 text-lg font-bold text-center h-8 " + (isCorrect ? "text-green-400" : "text-red-400");
+        }
+
+        // 场景2逻辑：影子实验室
+        function initShadowLab() {
+            const block = document.getElementById('block');
+            const shadow = document.getElementById('shadow-cast');
+            const container = document.getElementById('tab2');
+            let isDragging = false;
+
+            const updateShadow = () => {
+                const rect = block.getBoundingClientRect();
+                const contRect = container.getBoundingClientRect();
+                const relativeLeft = rect.left - contRect.left;
+                
+                const distFromLight = relativeLeft - 50;
+                const scale = 1 + (150 / Math.max(distFromLight, 10));
+                
+                const shadowSize = 64 * scale;
+                shadow.style.width = shadowSize + 'px';
+                shadow.style.height = shadowSize + 'px';
+                shadow.style.right = '32px';
+                shadow.style.top = (225 - shadowSize/2) + 'px';
+                shadow.style.filter = `blur(${scale * 0.5}px)`;
+            };
+
+            block.onmousedown = (e) => { isDragging = true; };
+            window.onmousemove = (e) => {
+                if (!isDragging) return;
+                const contRect = container.getBoundingClientRect();
+                let x = e.clientX - contRect.left - 32;
+                if (x > 100 && x < 450) {
+                    block.style.left = x + 'px';
+                    updateShadow();
+                }
+            };
+            window.onmouseup = () => { isDragging = false; };
+            
+            block.ontouchmove = (e) => {
+                const contRect = container.getBoundingClientRect();
+                let x = e.touches[0].clientX - contRect.left - 32;
+                if (x > 100 && x < 450) {
+                    block.style.left = x + 'px';
+                    updateShadow();
+                }
+            };
+
+            updateShadow();
+        }
+
+        function changeShape(type) {
+            const block = document.getElementById('block');
+            const shadow = document.getElementById('shadow-cast');
+            if(type === 'circle') {
+                block.style.borderRadius = '50%';
+                shadow.style.borderRadius = '50%';
             } else {
-                feedback.innerHTML = `<span class="wrong">✘ 错误。${item.name}本身不会发光。</span>`;
-            }
-
-            if (correctDrops === itemsData.length) {
-                document.getElementById('btnNext1').disabled = false;
-                feedback.innerHTML = '<span class="correct">全部正确！你太棒了！</span>';
+                block.style.borderRadius = '4px';
+                shadow.style.borderRadius = '4px';
             }
         }
 
-        // 关卡2：影子实验室逻辑
-        let isDragging = false;
-        function startDrag(e) {
-            isDragging = true;
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('touchmove', onMove);
-            document.addEventListener('mouseup', stopDrag);
-            document.addEventListener('touchend', stopDrag);
-        }
-
-        function onMove(e) {
-            if (!isDragging) return;
-            const lab = document.getElementById('labBox');
-            const obj = document.getElementById('object');
-            const shadow = document.getElementById('shadow');
-            const rect = lab.getBoundingClientRect();
+        // 场景3逻辑：穿透力 (更新为亮背景下的逻辑)
+        function setMaterial(type) {
+            const box = document.getElementById('material-box');
+            const wall = document.getElementById('wall-result');
+            const text = document.getElementById('material-text');
+            const desc = document.getElementById('material-desc');
+            const beam = document.getElementById('beam3');
             
-            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            let x = clientX - rect.left - 40; // 居中
-            
-            if (x < 50) x = 50;
-            if (x > rect.width - 150) x = rect.width - 150;
+            wall.style.opacity = "1";
 
-            obj.style.left = x + 'px';
-            
-            // 影子逻辑：离左侧(光源)越近，影子越大
-            // 影子位置在物体右侧延伸到墙
-            shadow.style.left = (x + 80) + 'px';
-            let distanceToSource = x; 
-            let scale = 1 + (150 / distanceToSource);
-            shadow.style.transform = `scaleY(${scale})`;
-            shadow.style.width = (rect.width - x - 80) + 'px';
-            shadow.style.background = `rgba(0,0,0,${0.3 + (distanceToSource/1000)})`;
-        }
-
-        function stopDrag() {
-            isDragging = false;
-        }
-
-        // 关卡3：问答
-        function checkQuiz(btn, isCorrect) {
-            const feedback = document.getElementById('feedback3');
-            if (isCorrect) {
-                btn.style.background = '#059669';
-                quizScore++;
-                feedback.innerHTML = '<span class="correct">回答正确！</span>';
-            } else {
-                btn.style.background = '#991b1b';
-                feedback.innerHTML = '<span class="wrong">再想想看？</span>';
-            }
-
-            if (quizScore >= 2) {
-                document.getElementById('finishBtn').disabled = false;
+            if(type === 'clear') {
+                box.style.background = "rgba(200, 240, 255, 0.3)";
+                box.style.border = "4px solid #add8e6";
+                wall.style.background = "rgba(0,0,0,0.05)";
+                wall.style.filter = "blur(10px)";
+                text.innerText = "";
+                desc.innerText = "【透明物体】让光全部穿过，几乎没有影子！";
+                beam.style.width = "800px";
+            } else if(type === 'frosted') {
+                box.style.background = "rgba(255, 255, 255, 0.8)";
+                box.style.border = "4px solid #cbd5e0";
+                wall.style.background = "rgba(0,0,0,0.3)";
+                wall.style.filter = "blur(5px)";
+                text.innerText = "模糊影子";
+                desc.innerText = "【半透明物体】只让一部分光穿过，影子很模糊。";
+                beam.style.width = "400px";
+            } else if(type === 'solid') {
+                box.style.background = "#5d4037";
+                box.style.border = "4px solid #3e2723";
+                wall.style.background = "rgba(0,0,0,0.9)";
+                wall.style.filter = "blur(1px)";
+                text.innerText = "清晰影子";
+                desc.innerText = "【不透明物体】挡住了所有的光，影子很黑很清楚！";
+                beam.style.width = "370px";
             }
         }
-
-        // 导航逻辑
-        function goToStep(num) {
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step' + num).classList.add('active');
-            document.getElementById('progressBar').style.width = (num * 25) + '%';
-        }
-
-        function finishGame() {
-            goToStep(4);
-        }
-
-        // 初始化
-        window.onload = () => {
-            initLevel1();
-            // 初始影子状态
-            onMove({clientX: 400});
-            isDragging = false;
-        };
     </script>
 </body>
 </html>
