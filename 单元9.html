@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>神奇科学实验室：混合物大冒险</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a playful cartoon feel -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .cartoon-font {
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif;
+        }
+        /* Bounce Animation */
+        @keyframes custom-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow {
+            animation: custom-bounce 2s infinite;
+        }
+        /* Water Wave Animation */
+        @keyframes wave {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .water-wave {
+            border-radius: 40%;
+            animation: wave 10s infinite linear;
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden min-h-screen flex flex-col justify-between">
+
+    <!-- Sound & Music Toggles -->
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button id="btn-sound" class="bg-white/80 backdrop-blur p-2.5 rounded-full shadow-md hover:scale-105 active:scale-95 transition-all text-xl" onclick="toggleSound()">
+            🔊
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4 max-w-lg mx-auto w-full">
+        
+        <!-- 1. START SCREEN (主界面) -->
+        <section id="screen-start" class="w-full flex flex-col items-center text-center space-y-6 py-8">
+            <div class="relative w-48 h-48 animate-bounce-slow flex items-center justify-center">
+                <!-- Cute SVG Lab Flask -->
+                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-xl">
+                    <path d="M40 20 L40 35 L20 80 A10 10 0 0 0 30 95 L70 95 A10 10 0 0 0 80 80 L60 35 L60 20 Z" fill="#e0f2fe" stroke="#0369a1" stroke-width="4"/>
+                    <path d="M28 75 Q50 65 72 75 L67 85 L33 85 Z" fill="#38bdf8"/>
+                    <!-- Bubbles -->
+                    <circle cx="45" cy="55" r="4" fill="#ffffff" opacity="0.7"/>
+                    <circle cx="55" cy="65" r="3" fill="#ffffff" opacity="0.7"/>
+                    <circle cx="38" cy="70" r="5" fill="#ffffff" opacity="0.6"/>
+                    <!-- Flask rim -->
+                    <rect x="36" y="16" width="28" height="6" rx="3" fill="#0369a1"/>
+                </svg>
+                <span class="absolute text-5xl">🧪</span>
+            </div>
+
+            <div class="space-y-2">
+                <h1 class="text-4xl font-bold text-emerald-600 cartoon-font tracking-wider drop-shadow-sm">混合物大冒险</h1>
+                <p class="text-sm text-emerald-800 bg-emerald-100/60 px-3 py-1 rounded-full inline-block font-medium">二年级科学互动探索游戏</p>
+            </div>
+
+            <p class="text-gray-600 px-4 text-base leading-relaxed">
+                欢迎来到神奇科学实验室！<br>
+                在这里，你将成为一名<span class="text-orange-500 font-bold">科学小侦探</span>，动手分离神秘混合物、施展水中隐身术、挑战疯狂搅拌机！
+            </p>
+
+            <button onclick="startGame()" class="w-full max-w-xs py-4 px-8 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-2xl rounded-2xl shadow-lg shadow-emerald-200 hover:brightness-105 active:scale-95 transition-all cartoon-font tracking-wide">
+                开始冒险 🚀
+            </button>
+
+            <!-- Learning Goals -->
+            <div class="border border-emerald-100 bg-emerald-50/50 p-3 rounded-xl w-full text-xs text-left text-emerald-800 space-y-1">
+                <p class="font-bold">💡 学习加油站：</p>
+                <p>• 掌握用手、筛子、磁铁、漂浮、过滤和蒸发分离混合物</p>
+                <p>• 了解哪些物质会溶解，哪些不会溶解</p>
+                <p>• 认识溶质、溶剂、溶液及搅拌对溶解的影响</p>
+            </div>
+        </section>
+
+
+        <!-- 2. GAME PLAY SCREEN (关卡舞台) -->
+        <section id="screen-game" class="w-full hidden flex flex-col space-y-4">
+            <!-- Header: Progress & Level Info -->
+            <div class="flex items-center justify-between bg-white/70 backdrop-blur p-3 rounded-2xl shadow-sm border border-emerald-50">
+                <div class="flex items-center space-x-2">
+                    <span id="level-icon" class="text-2xl">🔍</span>
+                    <div>
+                        <h2 id="level-title" class="text-lg font-bold text-gray-800">第一关</h2>
+                        <p id="level-subtitle" class="text-xs text-gray-500">分离大师</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-emerald-600 font-bold" id="score-text">得分: 0</div>
+                    <div class="w-24 bg-gray-200 h-2 rounded-full overflow-hidden mt-1">
+                        <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Box -->
+            <div id="task-box" class="bg-amber-50 border border-amber-200 p-3 rounded-2xl text-center text-sm text-amber-900 font-medium">
+                任务加载中...
+            </div>
+
+            <!-- MAIN ACTIVE WORKSPACE -->
+            <div id="game-workspace" class="bg-white rounded-3xl p-4 shadow-md border border-emerald-100 min-h-[320px] flex flex-col justify-center items-center relative overflow-hidden">
+                <!-- Content injected dynamically -->
+            </div>
+
+            <!-- Bottom Interactive Help -->
+            <div id="feedback-tip" class="h-8 text-center text-sm font-bold text-emerald-600 animate-pulse transition-all">
+                加油！开动脑筋想一想！
+            </div>
+        </section>
+
+
+        <!-- 3. SCORE REPORT SCREEN (结算界面) -->
+        <section id="screen-result" class="w-full hidden flex flex-col items-center text-center space-y-6 py-8">
+            <div class="relative">
+                <div class="text-7xl animate-bounce">🏆</div>
+                <div class="absolute -top-2 -right-2 text-3xl">✨</div>
+            </div>
+
+            <div class="space-y-1">
+                <h1 class="text-3xl font-bold text-emerald-600 cartoon-font">太棒了！荣誉勋章</h1>
+                <p class="text-gray-500">你成功通过了所有的科学考验！</p>
+            </div>
+
+            <!-- Score Badge Card -->
+            <div class="bg-white border-2 border-emerald-100 rounded-3xl p-6 w-full shadow-lg relative overflow-hidden">
+                <!-- Decorative background elements -->
+                <div class="absolute -top-12 -left-12 w-24 h-24 bg-emerald-50 rounded-full opacity-50"></div>
+                <div class="absolute -bottom-12 -right-12 w-24 h-24 bg-amber-50 rounded-full opacity-50"></div>
+
+                <div class="relative z-10 space-y-4">
+                    <div class="text-xs uppercase tracking-wider text-gray-400 font-bold">最终评分</div>
+                    <div class="text-6xl font-black text-emerald-500 cartoon-font" id="final-score">100</div>
+                    <div class="text-lg font-bold text-amber-600" id="badge-title">超级科学小侦探 🥇</div>
+                    
+                    <div class="border-t border-dashed border-gray-100 pt-4 text-sm text-gray-600 space-y-2 text-left">
+                        <p class="flex items-center"><span class="text-emerald-500 mr-2">✔</span> 掌握了筛子、磁铁、漂浮、蒸发分离法</p>
+                        <p class="flex items-center"><span class="text-emerald-500 mr-2">✔</span> 能准确区分溶解和不溶解物质</p>
+                        <p class="flex items-center"><span class="text-emerald-500 mr-2">✔</span> 深刻理解了搅拌加速溶解的道理</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col w-full gap-3">
+                <button onclick="startGame()" class="py-3 px-6 bg-emerald-500 text-white font-bold text-xl rounded-2xl shadow-md hover:bg-emerald-600 active:scale-95 transition-all">
+                    再玩一次 🔄
+                </button>
+                <button onclick="showStartScreen()" class="py-3 px-6 bg-gray-100 text-gray-600 font-bold text-lg rounded-2xl hover:bg-gray-200 active:scale-95 transition-all">
+                    返回主页 🏠
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Credit -->
+    <footer class="text-center py-4 text-xs text-gray-400">
+        二年级科学《混合物》互动配套课件 • 趣味科学实验室
+    </footer>
+
+    <!-- Custom Dialog Modal (Replaces Browser Alert) -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center shadow-2xl scale-90 transition-transform duration-300" id="modal-box">
+            <div id="modal-emoji" class="text-6xl mb-4">🎉</div>
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2">太棒了！</h3>
+            <p id="modal-text" class="text-sm text-gray-500 mb-6">解析提示内容...</p>
+            <button onclick="closeModal()" id="modal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-md active:scale-95 transition-all">
+                好的，继续！
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- GAME STATE ---
+        let currentLevel = 1;
+        let score = 0;
+        let soundEnabled = true;
+
+        // Sound generator using Web Audio API (No external file dependencies!)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration, delay = 0) {
+            if (!soundEnabled) return;
+            setTimeout(() => {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {
+                    console.log("Audio not allowed yet");
+                }
+            }, delay * 1000);
+        }
+
+        function playCorrectSound() {
+            playTone(523.25, 'sine', 0.1, 0); // C5
+            playTone(659.25, 'sine', 0.15, 0.08); // E5
+            playTone(783.99, 'sine', 0.3, 0.16); // G5
+        }
+
+        function playWrongSound() {
+            playTone(220.00, 'triangle', 0.2, 0); // A3
+            playTone(180.00, 'triangle', 0.3, 0.1); // Low buzz
+        }
+
+        function playStirSound() {
+            // Soft high click for liquid stirring
+            playTone(1200, 'sine', 0.04);
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('btn-sound').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // --- SCREEN ROUTING ---
+        function showStartScreen() {
+            document.getElementById('screen-start').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+        }
+
+        function startGame() {
+            currentLevel = 1;
+            score = 0;
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            loadLevel();
+        }
+
+        function finishGame() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+            
+            // Set final score & evaluation title
+            document.getElementById('final-score').innerText = score;
+            let title = "初级科学小助手 🧪";
+            if (score >= 90) {
+                title = "超级科学探险家 👑";
+            } else if (score >= 70) {
+                title = "资深实验小达人 🥇";
+            }
+            document.getElementById('badge-title').innerText = title;
+        }
+
+        // --- LEVEL CONTROLLER ---
+        function loadLevel() {
+            updateHeader();
+            const workspace = document.getElementById('game-workspace');
+            const feedback = document.getElementById('feedback-tip');
+            feedback.innerText = "开动脑筋，帮帮实验室的主角们吧！";
+            feedback.className = "h-8 text-center text-sm font-bold text-emerald-600 animate-pulse";
+            
+            workspace.innerHTML = ''; // Clear previous content
+
+            if (currentLevel === 1) {
+                setupLevel1();
+            } else if (currentLevel === 2) {
+                setupLevel2();
+            } else if (currentLevel === 3) {
+                setupLevel3();
+            } else {
+                finishGame();
+            }
+        }
+
+        function updateHeader() {
+            const titles = ["", "第一关：分离大师 🛠", "第二关：水中隐身术 🪄", "第三关：神奇实验室 🧪"];
+            const subtitles = ["", "根据混合物的性质，选择合适的工具把它们分离开！", "把物品分类：哪些会在水里隐形（溶解）呢？", "匹配科学名词，一起动手搅拌杯中的混合物！", ""];
+            const icons = ["", "🛠", "🪄", "🧪"];
+            
+            document.getElementById('level-title').innerText = titles[currentLevel];
+            document.getElementById('level-subtitle').innerText = subtitles[currentLevel];
+            document.getElementById('level-icon').innerText = icons[currentLevel];
+            document.getElementById('score-text').innerText = "得分: " + score;
+            
+            // Progress bar
+            let percentage = ((currentLevel - 1) / 3) * 100;
+            document.getElementById('progress-bar').style.width = percentage + "%";
+        }
+
+
+        // --- LEVEL 1: SEPARATION MASTER ---
+        const level1Data = [
+            {
+                mixture: "回形针 和 面粉",
+                desc: "粗心的乐乐把铁质回形针掉到面粉里了！怎么最快分出来呢？",
+                correctTool: "magnet",
+                emoji: "📎🍚",
+                successGif: "📎🧲",
+                reason: "利用【磁铁】可以吸住铁质物体的性质，能够轻松把回形针从面粉中吸出来！",
+                animEffect: function(container) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="relative w-32 h-32 flex items-center justify-center bg-yellow-50 rounded-full border border-yellow-200">
+                                <span class="text-4xl absolute animate-bounce" style="top:20%">🧲</span>
+                                <span class="text-2xl absolute transition-all duration-700" id="p-clip1" style="bottom:20%; left:30%;">📎</span>
+                                <span class="text-2xl absolute transition-all duration-700" id="p-clip2" style="bottom:20%; right:30%;">📎</span>
+                                <span class="text-5xl" style="bottom:10%">🍚</span>
+                            </div>
+                            <p class="text-emerald-600 font-bold text-sm">嗖的一声！回形针被吸上去了！</p>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('p-clip1').style.transform = 'translateY(-40px) scale(1.2)';
+                        document.getElementById('p-clip2').style.transform = 'translateY(-40px) scale(1.2)';
+                    }, 100);
+                }
+            },
+            {
+                mixture: "花生 和 面粉",
+                desc: "欢欢想吃面粉做的小蛋糕，但是她不能吃花生，要怎么把面粉和花生分离开呢？",
+                correctTool: "sieve",
+                emoji: "🥜🍚",
+                reason: "【筛子】上的小孔能让细小的面粉通过，把比较大颗的花生留在上面！",
+                animEffect: function(container) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="relative w-36 h-28 flex flex-col items-center justify-end bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                                <div class="w-full h-1 bg-gray-400 absolute" style="top:50%"></div>
+                                <span class="text-2xl absolute z-10" style="top:15%; left:30%">🥜</span>
+                                <span class="text-2xl absolute z-10" style="top:15%; right:30%">🥜</span>
+                                <span class="text-xs text-gray-400 absolute" style="top:35%">筛网</span>
+                                <div class="text-center w-full bg-white transition-all duration-1000 translate-y-8" id="sieve-flour" style="height:40%">
+                                    <span class="text-3xl">🍚</span>
+                                    <p class="text-xs text-gray-500">落下的细面粉</p>
+                                </div>
+                            </div>
+                            <p class="text-emerald-600 font-bold text-sm">沙沙沙！细面粉漏了下去，花生被留住了！</p>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('sieve-flour').classList.remove('translate-y-8');
+                    }, 100);
+                }
+            },
+            {
+                mixture: "枯叶 和 碎石",
+                desc: "在小公园里捡到了夹杂着碎石的枯叶，怎么最快分离开呢？",
+                correctTool: "float",
+                emoji: "🍂🪨",
+                reason: "利用【漂浮法】，有些物质会漂浮（比如枯叶），把它们放入水里，枯叶就会浮起来，碎石会沉在水底！",
+                animEffect: function(container) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="w-24 h-32 border-4 border-blue-200 rounded-b-3xl relative overflow-hidden bg-blue-50/50 flex flex-col justify-between">
+                                <div class="bg-blue-300/60 w-full h-2/3 absolute bottom-0 left-0"></div>
+                                <span class="text-3xl absolute z-10 transition-all duration-1000" id="leaf" style="bottom: 10%; left:30%">🍂</span>
+                                <span class="text-3xl absolute z-10" style="bottom: 5%; left:50%">🪨</span>
+                            </div>
+                            <p class="text-emerald-600 font-bold text-sm">枯叶浮在水面上，小碎石沉下去了！</p>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('leaf').style.bottom = '55%';
+                    }, 100);
+                }
+            },
+            {
+                mixture: "沙子 和 水",
+                desc: "泥沙水浑浊不清，我们要用什么方法把水里不溶解的沙子彻底分离出来呢？",
+                correctTool: "filter",
+                emoji: "⏳💧",
+                reason: "有些物质不会溶解在水里（比如沙子），用【滤纸】（过滤法）可以让水穿过，把不溶解的沙子留在滤纸上！",
+                animEffect: function(container) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-20 h-10 bg-gray-200 rounded-t-full border-2 border-gray-400 relative flex items-center justify-center">
+                                    <span class="text-xs font-bold text-yellow-800">沙子 ⏳</span>
+                                </div>
+                                <div class="w-1 h-8 bg-blue-400 animate-pulse my-1"></div>
+                                <div class="w-16 h-16 border-2 border-blue-300 rounded-b-xl bg-blue-100 flex items-center justify-center">
+                                    <span class="text-xl">💧</span>
+                                </div>
+                            </div>
+                            <p class="text-emerald-600 font-bold text-sm">过滤纸挡住了沙子，滴出了干净的水！</p>
+                        </div>
+                    `;
+                }
+            },
+            {
+                mixture: "食盐 和 水",
+                desc: "盐已经完全融化在水里（盐水）了，我们要怎么才能重新得到白白晶莹的盐粒呢？",
+                correctTool: "evaporate",
+                emoji: "🧂💧",
+                reason: "盐会溶解在水里。把盐和水的混合物放在太阳底下晒干，或者加热【蒸发】，水分变成水蒸气跑掉，就能重新得到盐粒！",
+                animEffect: function(container) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center space-y-4">
+                            <div class="relative w-32 h-32 flex flex-col items-center justify-center bg-orange-50 rounded-full border border-orange-200">
+                                <span class="text-4xl absolute" style="top:5%; right:5%">☀️</span>
+                                <span class="text-2xl absolute animate-bounce" id="water-vapor" style="top:25%">💨</span>
+                                <span class="text-5xl transition-all duration-1000" id="salt-bowl" style="bottom:10%">🥣</span>
+                                <span class="text-xs absolute font-bold text-amber-700" id="salt-crystals" style="bottom:25%; opacity:0">✨ 晶莹盐粒 ✨</span>
+                            </div>
+                            <p class="text-emerald-600 font-bold text-sm">水蒸气跑掉了！底下留下了白色食盐！</p>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('water-vapor').style.transform = 'translateY(-30px)';
+                        document.getElementById('water-vapor').style.opacity = '0';
+                        document.getElementById('salt-crystals').style.opacity = '1';
+                    }, 500);
+                }
+            }
+        ];
+
+        let level1Index = 0;
+        let selectedTool = null;
+
+        function setupLevel1() {
+            const data = level1Data[level1Index];
+            document.getElementById('task-box').innerHTML = `
+                <div class="font-bold text-base mb-1">🔍 混合物分离任务 (${level1Index + 1}/${level1Data.length})</div>
+                <div class="text-emerald-800 text-lg">如何把 <span class="text-orange-600 font-bold">${data.mixture}</span> 分离开？</div>
+                <p class="text-xs text-gray-500 mt-1">${data.desc}</p>
+            `;
+
+            const workspace = document.getElementById('game-workspace');
+            workspace.className = "bg-white rounded-3xl p-4 shadow-md border border-emerald-100 min-h-[320px] flex flex-col justify-between items-center w-full relative";
+            
+            // Render mixture and tools selection
+            workspace.innerHTML = `
+                <!-- Mixture Box -->
+                <div class="flex-grow flex flex-col items-center justify-center space-y-2 mt-4" id="mixture-container">
+                    <div class="text-7xl p-6 bg-emerald-50 rounded-full border-2 border-emerald-100 shadow-inner relative animate-pulse">
+                        ${data.emoji}
+                    </div>
+                    <span class="text-lg font-bold text-gray-700">${data.mixture}</span>
+                </div>
+
+                <!-- Tools Selection -->
+                <div class="w-full space-y-2">
+                    <p class="text-center text-xs font-bold text-gray-400">👇 请点击选择一样适合的工具/方法：</p>
+                    <div class="grid grid-cols-3 gap-2 w-full">
+                        <button onclick="selectTool('hand')" id="tool-hand" class="tool-btn bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-2 rounded-xl flex flex-col items-center transition-all">
+                            <span class="text-2xl">✋</span>
+                            <span class="text-xs font-bold text-emerald-800 mt-1">用手</span>
+                        </button>
+                        <button onclick="selectTool('sieve')" id="tool-sieve" class="tool-btn bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-2 rounded-xl flex flex-col items-center transition-all">
+                            <span class="text-2xl">🕸️</span>
+                            <span class="text-xs font-bold text-emerald-800 mt-1">用筛子</span>
+                        </button>
+                        <button onclick="selectTool('magnet')" id="tool-magnet" class="tool-btn bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-2 rounded-xl flex flex-col items-center transition-all">
+                            <span class="text-2xl">🧲</span>
+                            <span class="text-xs font-bold text-emerald-800 mt-1">用磁铁</span>
+                        </button>
+                        <button onclick="selectTool('float')" id="tool-float" class="tool-btn bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-2 rounded-xl flex flex-col items-center transition-all">
+                            <span class="text-2xl">💧</span>
+                            <span class="text-xs font-bold text-emerald-800 mt-1">漂浮法</span>
+                        </button>
+                        <button onclick="selectTool('filter')" id="tool-filter" class="tool-btn bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-2 rounded-xl flex flex-col items-center transition-all">
+                            <span class="text-2xl">☕</span>
+                            <span class="text-xs font-bold text-emerald-800 mt-1">用过滤纸</span>
+                        </button>
+                        <button onclick="selectTool('evaporate')" id="tool-evaporate" class="tool-btn bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 p-2 rounded-xl flex flex-col items-center transition-all">
+                            <span class="text-2xl">☀️</span>
+                            <span class="text-xs font-bold text-emerald-800 mt-1">蒸发法</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            selectedTool = null;
+        }
+
+        function selectTool(toolId) {
+            selectedTool = toolId;
+            // Highlight selected tool button
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.classList.remove('border-amber-500', 'bg-amber-100');
+                btn.classList.add('border-emerald-200', 'bg-emerald-50');
+            });
+            const selectedBtn = document.getElementById('tool-' + toolId);
+            selectedBtn.classList.remove('border-emerald-200', 'bg-emerald-50');
+            selectedBtn.classList.add('border-amber-500', 'bg-amber-100', 'scale-105');
+
+            // Trigger validation automatically
+            checkLevel1Answer();
+        }
+
+        function checkLevel1Answer() {
+            const data = level1Data[level1Index];
+            if (selectedTool === data.correctTool) {
+                // Correct!
+                score += 10;
+                playCorrectSound();
+                
+                // Show Animation
+                const container = document.getElementById('mixture-container');
+                data.animEffect(container);
+
+                setTimeout(() => {
+                    showModal("🎉 恭喜你答对啦！", data.reason, "🍀 太棒了，下一题！", "🎉", () => {
+                        level1Index++;
+                        if (level1Index < level1Data.length) {
+                            loadLevel();
+                        } else {
+                            currentLevel = 2; // Go to next level
+                            loadLevel();
+                        }
+                    });
+                }, 1200);
+
+            } else {
+                // Wrong
+                playWrongSound();
+                document.getElementById('feedback-tip').innerText = "哎呀，这个工具好像不合用呢！再想想！❌";
+                document.getElementById('feedback-tip').className = "h-8 text-center text-sm font-bold text-rose-500";
+                
+                // Reset tool selection after slight pause
+                setTimeout(() => {
+                    if (document.getElementById('feedback-tip')) {
+                        document.getElementById('feedback-tip').innerText = "请仔细看混合物的性质特点哦！";
+                        document.getElementById('feedback-tip').className = "h-8 text-center text-sm font-bold text-amber-600";
+                    }
+                }, 1500);
+            }
+        }
+
+
+        // --- LEVEL 2: DISSOLVING MAGIC ---
+        // 8 items to sort into Dissolve or Not Dissolve
+        const level2Items = [
+            { name: "白糖 (Sugar)", dissolve: true, emoji: "🍬" },
+            { name: "沙子 (Sand)", dissolve: false, emoji: "⏳" },
+            { name: "食盐 (Salt)", dissolve: true, emoji: "🧂" },
+            { name: "面粉 (Flour)", dissolve: false, emoji: "🍚" },
+            { name: "枯叶 (Dry leaves)", dissolve: false, emoji: "🍂" },
+            { name: "蜂蜜 (Honey)", dissolve: true, emoji: "🍯" },
+            { name: "铁钉 (Nails)", dissolve: false, emoji: "🔩" },
+            { name: "即溶咖啡粉 (Coffee)", dissolve: true, emoji: "☕" }
+        ];
+
+        let level2Index = 0;
+
+        function setupLevel2() {
+            document.getElementById('task-box').innerHTML = `
+                <div class="font-bold text-base mb-1">🪄 水中隐身术分类 (2/3)</div>
+                <div class="text-emerald-800 text-sm">这些物质放进水里，到底会【溶解】还是【不会溶解】？</div>
+            `;
+
+            const workspace = document.getElementById('game-workspace');
+            workspace.className = "bg-white rounded-3xl p-4 shadow-md border border-emerald-100 min-h-[340px] flex flex-col justify-between items-center w-full";
+
+            if (level2Index >= level2Items.length) {
+                // Done with Level 2
+                currentLevel = 3;
+                loadLevel();
+                return;
+            }
+
+            const currentItem = level2Items[level2Index];
+
+            workspace.innerHTML = `
+                <div class="text-center space-y-2 py-4">
+                    <p class="text-xs text-gray-400">当前测试物质：(${level2Index + 1}/${level2Items.length})</p>
+                    <div class="w-24 h-24 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-center text-5xl shadow-sm mx-auto animate-bounce-slow">
+                        ${currentItem.emoji}
+                    </div>
+                    <div class="text-xl font-bold text-gray-800">${currentItem.name}</div>
+                </div>
+
+                <!-- Two Choice Buckets -->
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <button onclick="chooseDissolve(true)" class="flex flex-col items-center bg-blue-50 border-2 border-blue-200 hover:bg-blue-100 p-4 rounded-2xl transition-all active:scale-95">
+                        <span class="text-4xl">🪄💧</span>
+                        <span class="text-base font-bold text-blue-800 mt-2">会溶解</span>
+                        <span class="text-xxs text-blue-500 mt-1">（在水里“隐身”消失不见）</span>
+                    </button>
+                    <button onclick="chooseDissolve(false)" class="flex flex-col items-center bg-yellow-50 border-2 border-yellow-200 hover:bg-yellow-100 p-4 rounded-2xl transition-all active:scale-95">
+                        <span class="text-4xl">👀🍵</span>
+                        <span class="text-base font-bold text-yellow-800 mt-2">不会溶解</span>
+                        <span class="text-xxs text-yellow-600 mt-1">（能看到一颗颗粒沉在底下）</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function chooseDissolve(userChoice) {
+            const item = level2Items[level2Index];
+            const isCorrect = (userChoice === item.dissolve);
+
+            if (isCorrect) {
+                score += 5;
+                playCorrectSound();
+                document.getElementById('feedback-tip').innerText = `太赞了！${item.name} 确实是这样的！ 👍`;
+                document.getElementById('feedback-tip').className = "h-8 text-center text-sm font-bold text-emerald-600";
+                
+                // Small animation of dissolving
+                const workspace = document.getElementById('game-workspace');
+                if (userChoice) {
+                    workspace.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full space-y-4 py-8">
+                            <div class="w-20 h-28 border-4 border-blue-200 rounded-b-2xl relative overflow-hidden bg-blue-50 flex items-center justify-center">
+                                <div class="absolute inset-0 bg-blue-300/30"></div>
+                                <span class="text-4xl transition-all duration-1000 scale-0 opacity-0">${item.emoji}</span>
+                                <span class="text-xs font-bold text-blue-700 absolute">“我隐身啦！”</span>
+                            </div>
+                            <p class="text-sm font-bold text-blue-600">慢慢搅拌后，颗粒完全消失，与水融为一体！</p>
+                        </div>
+                    `;
+                } else {
+                    workspace.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full space-y-4 py-8">
+                            <div class="w-20 h-28 border-4 border-blue-200 rounded-b-2xl relative overflow-hidden bg-blue-50 flex items-center justify-center">
+                                <div class="absolute inset-0 bg-blue-300/30"></div>
+                                <span class="text-3xl absolute bottom-2">${item.emoji}</span>
+                                <span class="text-xs font-bold text-amber-700 absolute top-2">“我还在这里哦！”</span>
+                            </div>
+                            <p class="text-sm font-bold text-amber-600">无论怎么搅拌，它的颗粒依然留在水里！</p>
+                        </div>
+                    `;
+                }
+
+                setTimeout(() => {
+                    level2Index++;
+                    loadLevel();
+                }, 1500);
+
+            } else {
+                playWrongSound();
+                document.getElementById('feedback-tip').innerText = `哎呀，再想一想！${item.name} 能溶解在水里吗？ ❌`;
+                document.getElementById('feedback-tip').className = "h-8 text-center text-sm font-bold text-rose-500";
+            }
+        }
+
+
+        // --- LEVEL 3: VOCABULARY MATCH & SUPER STIRRER ---
+        let currentLevel3Step = 1; // Step 1: Matching vocab; Step 2: Stirring experiment
+        
+        function setupLevel3() {
+            if (currentLevel3Step === 1) {
+                setupLevel3Matching();
+            } else {
+                setupLevel3Stirring();
+            }
+        }
+
+        // Vocabulary matching items
+        let selectedVocab = null;
+        let selectedDefinition = null;
+
+        const vocabItems = [
+            { id: "solute", name: "溶质", emoji: "🍬", desc: "被溶解的物质（如：糖、盐）" },
+            { id: "solvent", name: "溶剂", emoji: "💧", desc: "用来溶解其他物质的液体（如：水）" },
+            { id: "solution", name: "溶液", emoji: "🍵", desc: "溶质溶解在溶剂后形成均匀的液体（如：糖水）" }
+        ];
+
+        function setupLevel3Matching() {
+            document.getElementById('task-box').innerHTML = `
+                <div class="font-bold text-base mb-1">🧪 科学小知识配对 (3/3)</div>
+                <div class="text-emerald-800 text-sm">点击【科学词汇】和对应的【解释说明】把它们连起来吧！</div>
+            `;
+
+            const workspace = document.getElementById('game-workspace');
+            workspace.className = "bg-white rounded-3xl p-4 shadow-md border border-emerald-100 min-h-[340px] flex flex-col justify-between items-center w-full";
+
+            workspace.innerHTML = `
+                <div class="w-full text-center text-xs font-bold text-amber-600 mb-2">💡 课本第94页“知识加油站”：</div>
+                
+                <div class="grid grid-cols-2 gap-4 w-full h-full flex-grow items-center">
+                    <!-- Left Side: Vocab Names -->
+                    <div class="space-y-3 flex flex-col justify-center">
+                        <button id="v-solute" onclick="clickVocab('solute')" class="vocab-card p-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl text-indigo-900 font-bold hover:bg-indigo-100 transition-all text-sm flex items-center justify-center space-x-2">
+                            <span>🍬</span><span>溶质</span>
+                        </button>
+                        <button id="v-solvent" onclick="clickVocab('solvent')" class="vocab-card p-3 bg-sky-50 border-2 border-sky-100 rounded-xl text-sky-900 font-bold hover:bg-sky-100 transition-all text-sm flex items-center justify-center space-x-2">
+                            <span>💧</span><span>溶剂</span>
+                        </button>
+                        <button id="v-solution" onclick="clickVocab('solution')" class="vocab-card p-3 bg-purple-50 border-2 border-purple-100 rounded-xl text-purple-900 font-bold hover:bg-purple-100 transition-all text-sm flex items-center justify-center space-x-2">
+                            <span>🍵</span><span>溶液</span>
+                        </button>
+                    </div>
+
+                    <!-- Right Side: Definitions -->
+                    <div class="space-y-3 flex flex-col justify-center">
+                        <button id="d-solvent" onclick="clickDefinition('solvent')" class="def-card p-2 bg-slate-50 border-2 border-slate-100 rounded-xl text-slate-800 text-xxs hover:bg-slate-100 transition-all text-left">
+                            💧 <b>用来溶解其他物质的液体</b> （如：水）
+                        </button>
+                        <button id="d-solution" onclick="clickDefinition('solution')" class="def-card p-2 bg-slate-50 border-2 border-slate-100 rounded-xl text-slate-800 text-xxs hover:bg-slate-100 transition-all text-left">
+                            🍵 <b>混合均匀的液体形式</b> （如：糖水）
+                        </button>
+                        <button id="d-solute" onclick="clickDefinition('solute')" class="def-card p-2 bg-slate-50 border-2 border-slate-100 rounded-xl text-slate-800 text-xxs hover:bg-slate-100 transition-all text-left">
+                            🍬 <b>被溶解的固体或液体</b> （如：白糖）
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-xs text-gray-400 mt-2">点击配对它们来通往最终挑战！</div>
+            `;
+            selectedVocab = null;
+            selectedDefinition = null;
+        }
+
+        function clickVocab(id) {
+            selectedVocab = id;
+            document.querySelectorAll('.vocab-card').forEach(btn => btn.classList.remove('border-indigo-500', 'bg-indigo-200'));
+            document.getElementById('v-' + id).classList.add('border-indigo-500', 'bg-indigo-200');
+            checkMatch();
+        }
+
+        function clickDefinition(id) {
+            selectedDefinition = id;
+            document.querySelectorAll('.def-card').forEach(btn => btn.classList.remove('border-slate-500', 'bg-slate-200'));
+            document.getElementById('d-' + id).classList.add('border-slate-500', 'bg-slate-200');
+            checkMatch();
+        }
+
+        function checkMatch() {
+            if (selectedVocab && selectedDefinition) {
+                if (selectedVocab === selectedDefinition) {
+                    score += 10;
+                    playCorrectSound();
+                    
+                    // Style correctly matched pair
+                    const vBtn = document.getElementById('v-' + selectedVocab);
+                    const dBtn = document.getElementById('d-' + selectedDefinition);
+                    vBtn.className = "p-3 bg-emerald-500 border-2 border-emerald-600 text-white font-bold rounded-xl text-sm flex items-center justify-center space-x-2 pointer-events-none";
+                    dBtn.className = "p-2 bg-emerald-500 border-2 border-emerald-600 text-white text-xxs rounded-xl text-left pointer-events-none";
+
+                    selectedVocab = null;
+                    selectedDefinition = null;
+
+                    // Check if all matched
+                    const activeVocabs = document.querySelectorAll('.vocab-card:not(.pointer-events-none)');
+                    if (activeVocabs.length === 0) {
+                        setTimeout(() => {
+                            showModal("🎉 配对成功！", "太厉害了！你分清楚了溶质、溶剂和溶液！接下来，我们要亲自做一个搅拌实验哦！", "进入疯狂搅拌实验室！ 🧪", "🔥", () => {
+                                currentLevel3Step = 2;
+                                loadLevel();
+                            });
+                        }, 500);
+                    }
+                } else {
+                    playWrongSound();
+                    document.getElementById('feedback-tip').innerText = "哎呀，连线失败，再看一次定义哦！❌";
+                    document.getElementById('feedback-tip').className = "h-8 text-center text-sm font-bold text-rose-500";
+                    
+                    setTimeout(() => {
+                        document.querySelectorAll('.vocab-card').forEach(btn => btn.classList.remove('border-indigo-500', 'bg-indigo-200'));
+                        document.querySelectorAll('.def-card').forEach(btn => btn.classList.remove('border-slate-500', 'bg-slate-200'));
+                        selectedVocab = null;
+                        selectedDefinition = null;
+                        document.getElementById('feedback-tip').innerText = "加油！";
+                        document.getElementById('feedback-tip').className = "h-8 text-center text-sm font-bold text-emerald-600";
+                    }, 1000);
+                }
+            }
+        }
+
+
+        // --- STEP 2: CRAZY STIRRING EXPERIMENT ---
+        let stirClicks = 0;
+        const requiredStirs = 25; // Click 25 times to fully dissolve
+
+        function setupLevel3Stirring() {
+            document.getElementById('task-box').innerHTML = `
+                <div class="font-bold text-base mb-1">🔥 终极关卡：疯狂搅拌机！</div>
+                <div class="text-emerald-800 text-sm">课本中爷爷问：【为什么把糖放进水里后要搅拌？】来亲身体验一下吧！</div>
+            `;
+
+            const workspace = document.getElementById('game-workspace');
+            workspace.className = "bg-white rounded-3xl p-4 shadow-md border border-emerald-100 min-h-[340px] flex flex-col justify-between items-center w-full";
+
+            workspace.innerHTML = `
+                <!-- Beaker and Water Container -->
+                <div class="relative w-full flex-grow flex flex-col items-center justify-center">
+                    
+                    <div class="relative w-28 h-36 border-x-4 border-b-4 border-slate-300 rounded-b-3xl overflow-hidden flex flex-col justify-end bg-slate-50">
+                        <!-- Water wave fluid -->
+                        <div id="stir-water" class="absolute w-44 h-44 bg-blue-300/40 bottom-[-50px] left-[-30px] rounded-[40%] transition-all duration-300 pointer-events-none"></div>
+                        
+                        <!-- Sugar solids at the bottom -->
+                        <div id="sugar-piles" class="absolute bottom-1 w-full flex justify-center space-x-1 transition-all duration-300 pointer-events-none">
+                            <span class="text-xl opacity-100 transition-opacity duration-300" id="sugar-cube-1">⬜</span>
+                            <span class="text-xl opacity-100 transition-opacity duration-300" id="sugar-cube-2">⬜</span>
+                            <span class="text-xl opacity-100 transition-opacity duration-300" id="sugar-cube-3">⬜</span>
+                        </div>
+
+                        <!-- Animated Spoon -->
+                        <div id="spoon" class="absolute top-4 left-1/2 -translate-x-1/2 text-4xl transform transition-transform duration-100 pointer-events-none">
+                            🥄
+                        </div>
+                    </div>
+
+                    <!-- Progress Gauge for dissolving -->
+                    <div class="w-2/3 bg-gray-100 border border-gray-200 h-4 rounded-full overflow-hidden mt-4 relative">
+                        <div id="dissolve-progress" class="bg-gradient-to-r from-blue-400 to-emerald-400 h-full w-0 transition-all duration-200"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-gray-600" id="dissolve-percent">溶解进度: 0%</span>
+                    </div>
+                </div>
+
+                <!-- Big Interactive Stirring Button -->
+                <div class="w-full">
+                    <button onclick="stirSpoon()" class="w-full py-4 bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold text-xl rounded-2xl shadow-lg shadow-orange-100 active:scale-95 transition-all animate-pulse flex items-center justify-center space-x-2">
+                        <span>🥄</span><span>快速点击，开始搅拌！</span>
+                    </button>
+                    <p class="text-center text-xxs text-gray-400 mt-2">疯狂点击按钮代表你拿着勺子快速在水中旋转搅拌！</p>
+                </div>
+            `;
+            stirClicks = 0;
+        }
+
+        function stirSpoon() {
+            if (stirClicks >= requiredStirs) return;
+
+            stirClicks++;
+            playStirSound();
+
+            // Spoon shake animation
+            const spoon = document.getElementById('spoon');
+            const shakeX = (stirClicks % 2 === 0) ? -15 : 15;
+            const rotY = (stirClicks % 2 === 0) ? -10 : 10;
+            spoon.style.transform = `translate(-50%, 0) translateX(${shakeX}px) rotate(${rotY}deg) translateY(10px)`;
+            
+            // Water wave spin speed up
+            const water = document.getElementById('stir-water');
+            water.style.transform = `rotate(${stirClicks * 45}deg)`;
+
+            // Calculate progress percentage
+            const percentage = Math.floor((stirClicks / requiredStirs) * 100);
+            document.getElementById('dissolve-progress').style.width = percentage + "%";
+            document.getElementById('dissolve-percent').innerText = `溶解进度: ${percentage}%`;
+
+            // Slowly fade sugar cubes
+            if (percentage >= 30) {
+                document.getElementById('sugar-cube-1').style.opacity = '0.5';
+            }
+            if (percentage >= 60) {
+                document.getElementById('sugar-cube-2').style.opacity = '0.3';
+                document.getElementById('sugar-cube-1').style.opacity = '0.1';
+            }
+            if (percentage >= 90) {
+                document.getElementById('sugar-cube-3').style.opacity = '0.1';
+                document.getElementById('sugar-cube-2').style.opacity = '0.0';
+            }
+
+            if (stirClicks >= requiredStirs) {
+                // Done! Sugar dissolved
+                score += 20;
+                playCorrectSound();
+                document.getElementById('sugar-cube-3').style.opacity = '0';
+                
+                setTimeout(() => {
+                    showModal(
+                        "🎉 白糖成功隐身！", 
+                        "你看！通过快速【搅拌】，原本沉在水底的白糖（溶质）完全分散到水（溶剂）里了！搅拌可以加快物体的溶解速度哦！这就是为什么爷爷泡茶和加糖要用勺子搅拌的原因啦！", 
+                        "查看我的荣誉报告！ 🏆", 
+                        "🧪", 
+                        () => {
+                            currentLevel = 4; // Ends game
+                            loadLevel();
+                        }
+                    );
+                }, 500);
+            }
+        }
+
+
+        // --- DIALOG MODAL CONTROLLER ---
+        let currentModalCallback = null;
+
+        function showModal(title, text, btnText, emoji, callback) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal-btn').innerText = btnText;
+            document.getElementById('modal-emoji').innerText = emoji;
+            currentModalCallback = callback;
+
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-90');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-90');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (currentModalCallback) {
+                    currentModalCallback();
+                }
+            }, 300);
+        }
+    </script>
+</body>
+</html>
