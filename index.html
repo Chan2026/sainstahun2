@@ -36,10 +36,10 @@
             <span class="text-2xl font-bold text-gray-700">植物园地</span>
         </button>
 
-        <!-- 主题3：天气 -->
+        <!-- 主题3：混合物 (已重命名为 mixture) -->
         <button onclick="showTopic('weather')" class="topic-card bg-blue-100 border-4 border-blue-300 rounded-3xl p-8 flex flex-col items-center shadow-lg">
             <div class="bg-white p-4 rounded-full mb-4 text-4xl">☁️</div>
-            <span class="text-2xl font-bold text-gray-700">天气观测</span>
+            <span class="text-2xl font-bold text-gray-700">天气与混合物</span>
         </button>
 
         <!-- 主题4：光与暗 -->
@@ -74,7 +74,7 @@
     <footer class="text-center mt-12 text-gray-400 italic">让科学变得更有趣！✨</footer>
 
     <script>
-        // --- 在这里管理你的游戏数据 ---
+        // --- 修正后的游戏数据 ---
         const gameData = {
             animals: {
                 title: "动物世界",
@@ -103,8 +103,8 @@
                 colorClass: "bg-blue-100",
                 borderColor: "border-blue-300",
                 games: [
-                    { name: "混合物大冒险", link: "单元9.html" }，
-                    { name: "单元9大挑战", link: "混合物.html" }
+                    { name: "混合物大冒险", link: "单元9.html" }, // 修复：修改为英文逗号
+                    { name: "混合物大挑战", link: "混合物.html" }
                 ]
             },
             light: {
@@ -114,19 +114,13 @@
                 games: [
                     { name: "光源与影子", link: "光.html" }
                 ]
-            },
-            weather: {
-                title: "混合物",
-                colorClass: "bg-yellow-100",
-                borderColor: "border-yellow-300",
-                games: [
-                    { name: "混合物大挑战", link: "混合物.html" }
-                ]
             }
         };
 
         function showTopic(topicId) {
             const data = gameData[topicId];
+            if (!data) return; // 预防空数据报错
+
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('sub-menu').classList.remove('hidden');
             document.getElementById('page-subtitle').innerText = "正在探索：" + data.title;
@@ -159,8 +153,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
