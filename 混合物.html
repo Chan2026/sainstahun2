@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>神奇科学实验室：宝可梦式混合物大作战</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for playful/retro cartoon visual style -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .pixel-font {
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif;
+        }
+
+        /* Pokémon retro battle box style */
+        .pokemon-border {
+            border: 4px solid #1e293b;
+            box-shadow: 0 4px 0 #0f172a, inset 0 0 0 2px #cbd5e1;
+        }
+
+        .pokemon-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border: 4px solid #334155;
+            box-shadow: 4px 4px 0px #0f172a;
+        }
+
+        /* Health bar gradient transitions */
+        .hp-bar-fill {
+            transition: width 0.5s ease-in-out, background-color 0.5s ease;
+        }
+
+        /* Battle Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-12px) rotate(-3deg); }
+            40%, 80% { transform: translateX(12px) rotate(3deg); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes attack-slash {
+            0% { transform: scale(0.5) translate(-50px, 50px); opacity: 0; }
+            50% { transform: scale(1.3) translate(0, 0); opacity: 1; }
+            100% { transform: scale(1) translate(50px, -50px); opacity: 0; }
+        }
+        .animate-attack {
+            animation: attack-slash 0.4s ease-out forwards;
+        }
+
+        @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+        }
+        .animate-damage {
+            animation: float-up 0.8s ease-out forwards;
+        }
+
+        @keyframes monster-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-idle {
+            animation: monster-bounce 2.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center bg-slate-900 p-2 sm:p-4">
+
+    <!-- Top Navigation Header -->
+    <header class="w-full max-w-md flex justify-between items-center py-2 px-3 bg-slate-800 rounded-xl border border-slate-700 shadow-md">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🧪</span>
+            <span class="font-bold text-amber-400 pixel-font text-lg tracking-wide">科学大作战</span>
+        </div>
+        <button id="btn-sound" onclick="toggleSound()" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-500 transition-all">
+            🔊 音效: 开
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-md flex-grow flex flex-col justify-center my-2">
+
+        <!-- 1. START SCREEN -->
+        <section id="screen-start" class="w-full flex flex-col items-center text-center space-y-6 py-6 bg-slate-800/90 rounded-3xl p-6 border-2 border-slate-700 shadow-2xl">
+            <div class="relative w-36 h-36 flex items-center justify-center bg-gradient-to-b from-amber-400 to-orange-500 rounded-full border-4 border-amber-200 shadow-lg animate-idle">
+                <span class="text-7xl">👾</span>
+                <span class="absolute -top-2 -right-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border border-white">Boss</span>
+            </div>
+
+            <div class="space-y-2">
+                <h1 class="text-3xl font-bold text-amber-300 pixel-font tracking-wide">混合物大作战</h1>
+                <p class="text-xs text-slate-300 bg-slate-700/80 px-3 py-1.5 rounded-full inline-block border border-slate-600">
+                    小学二年级科学 • 宝可梦式对战擂台
+                </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700 text-left text-xs text-slate-300 space-y-2 w-full">
+                <p class="font-bold text-amber-400 text-sm flex items-center gap-1">⚔️ 对战规则说明：</p>
+                <p>1. 答对科学题目，玩家发动技能对怪兽造成伤害（扣除怪兽HP）！</p>
+                <p>2. 第一关：击败<b>“分离怪魔”</b> (12题混合物分离)。</p>
+                <p>3. 第二关：击败<b>“不溶幻影”</b> (12题溶解分类)。</p>
+                <p>4. 连续答对可触发暴击，体验畅快击倒怪兽的乐趣！</p>
+            </div>
+
+            <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-2xl rounded-2xl shadow-xl border-2 border-emerald-300 active:scale-95 transition-all pixel-font tracking-wider">
+                进入对战 ⚔️
+            </button>
+        </section>
+
+
+        <!-- 2. BATTLE ARENA SCREEN -->
+        <section id="screen-game" class="w-full hidden flex flex-col space-y-3">
+            
+            <!-- POKÉMON BATTLE VIEWPORT (Top Stage) -->
+            <div class="w-full bg-gradient-to-b from-sky-900 via-indigo-950 to-slate-900 rounded-2xl p-3 border-4 border-slate-700 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+                
+                <!-- Background Environment Lines -->
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+                <!-- ENEMY STATUS (Top Right) -->
+                <div class="self-end w-3/5 bg-slate-800/90 border-2 border-slate-600 rounded-xl p-2 shadow-lg relative z-10">
+                    <div class="flex justify-between items-center text-xs font-bold mb-1">
+                        <span id="monster-name" class="text-rose-400 font-extrabold text-sm">混合分离怪</span>
+                        <span id="monster-lv" class="text-slate-400 text-[10px]">Lv.12</span>
+                    </div>
+                    <!-- Monster HP Bar -->
+                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-700 p-0.5 relative">
+                        <div id="monster-hp-fill" class="hp-bar-fill bg-emerald-500 h-full rounded-full w-full"></div>
+                    </div>
+                    <div class="text-right text-[10px] text-slate-300 mt-0.5 font-bold" id="monster-hp-text">HP: 120 / 120</div>
+                </div>
+
+                <!-- SPRITES AREA (Center Stage) -->
+                <div class="relative w-full h-24 my-1 flex justify-between items-end px-4 z-10">
+                    <!-- Player Sprite (Bottom Left) -->
+                    <div id="player-sprite-box" class="relative flex flex-col items-center">
+                        <!-- Floating Damage text overlay -->
+                        <div id="player-damage-pop" class="absolute -top-8 font-black text-rose-400 text-lg hidden z-30 animate-damage">-15</div>
+                        <div class="text-5xl filter drop-shadow-lg">🧑‍🔬</div>
+                        <!-- Player Ground Circle -->
+                        <div class="w-16 h-3 bg-emerald-950/60 rounded-full filter blur-[2px] -mt-1"></div>
+                    </div>
+
+                    <!-- Attack FX Overlay Layer -->
+                    <div id="attack-fx" class="absolute inset-0 flex items-center justify-center pointer-events-none hidden z-20">
+                        <span class="text-6xl animate-attack">💥</span>
+                    </div>
+
+                    <!-- Monster Sprite (Top Right) -->
+                    <div id="monster-sprite-box" class="relative flex flex-col items-center animate-idle">
+                        <!-- Floating Damage text overlay -->
+                        <div id="monster-damage-pop" class="absolute -top-8 font-black text-amber-300 text-xl hidden z-30 animate-damage">-10 HP</div>
+                        <div id="monster-emoji" class="text-6xl filter drop-shadow-xl">👾</div>
+                        <!-- Monster Ground Circle -->
+                        <div class="w-20 h-4 bg-slate-950/80 rounded-full filter blur-[2px] -mt-1"></div>
+                    </div>
+                </div>
+
+                <!-- PLAYER STATUS (Bottom Left) -->
+                <div class="self-start w-3/5 bg-slate-800/90 border-2 border-slate-600 rounded-xl p-2 shadow-lg relative z-10">
+                    <div class="flex justify-between items-center text-xs font-bold mb-1">
+                        <span class="text-emerald-400 font-extrabold text-sm">小科学家</span>
+                        <span class="text-slate-400 text-[10px]">Lv.15</span>
+                    </div>
+                    <!-- Player HP Bar -->
+                    <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700 p-0.5">
+                        <div id="player-hp-fill" class="hp-bar-fill bg-emerald-500 h-full rounded-full w-full"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-300 mt-0.5 font-bold">
+                        <span id="stage-indicator" class="text-amber-400">关卡 1/2</span>
+                        <span id="player-hp-text">HP: 100 / 100</span>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- QUESTION CARD & OPTIONS (Bottom Control Box) -->
+            <div class="bg-slate-800 rounded-2xl p-4 border-2 border-slate-700 shadow-xl flex flex-col justify-between space-y-3">
+                
+                <!-- Question Prompt Box -->
+                <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-700 min-h-[90px] flex items-center gap-3">
+                    <div id="q-icon-box" class="w-16 h-16 rounded-xl bg-slate-800 border border-slate-600 flex items-center justify-center text-4xl flex-shrink-0 shadow-inner">
+                        🔍
+                    </div>
+                    <div class="flex-grow space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span id="q-number-tag" class="text-[10px] font-bold bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30">题目 1/12</span>
+                            <span id="q-category-tag" class="text-[10px] font-bold text-slate-400">分离混合物</span>
+                        </div>
+                        <h3 id="q-title" class="text-base font-bold text-white leading-snug">
+                            问题加载中...
+                        </h3>
+                        <p id="q-desc" class="text-xs text-slate-400 leading-tight">
+                            提示说明加载中...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Answer Options Grid -->
+                <div id="options-container" class="grid grid-cols-2 gap-2.5">
+                    <!-- Dynamic option buttons injected here -->
+                </div>
+
+                <!-- Battle Feedback / Log Bar -->
+                <div id="battle-log" class="text-center text-xs font-bold text-amber-400 py-1 bg-slate-900/50 rounded-lg border border-slate-700/50 h-7 flex items-center justify-center">
+                    请选择正确的方法发动攻击！💥
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- 3. RESULT & REWARD SCREEN -->
+        <section id="screen-result" class="w-full hidden flex flex-col items-center text-center space-y-6 py-8 bg-slate-800/90 rounded-3xl p-6 border-2 border-slate-700 shadow-2xl">
+            <div class="relative">
+                <div class="text-8xl animate-bounce">🏆</div>
+                <div class="absolute -top-2 -right-2 text-4xl">✨</div>
+            </div>
+
+            <div class="space-y-1">
+                <h1 class="text-3xl font-bold text-amber-400 pixel-font tracking-wide">擂台大胜利！</h1>
+                <p class="text-sm text-slate-300">你成功击败了所有混合物怪兽！</p>
+            </div>
+
+            <!-- Score Badge Card -->
+            <div class="bg-slate-900 border-2 border-slate-700 rounded-2xl p-5 w-full shadow-inner space-y-4">
+                <div class="text-xs text-slate-400 font-bold uppercase tracking-widest">战绩报告单</div>
+                <div class="text-5xl font-black text-emerald-400 pixel-font" id="final-score">100 分</div>
+                <div class="text-base font-bold text-amber-300" id="badge-title">称号：超级科学大搜查官 🥇</div>
+                
+                <div class="border-t border-slate-800 pt-3 text-xs text-slate-300 space-y-2 text-left">
+                    <p class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> 完美掌握磁铁、筛子、漂浮、过滤与蒸发分离法</p>
+                    <p class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> 准确分辨液体与固体物质的溶解特性</p>
+                    <p class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> 荣获神奇实验室“关卡大满贯”勋章</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col w-full gap-3">
+                <button onclick="startGame()" class="py-3.5 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-lg border border-emerald-400 active:scale-95 transition-all pixel-font">
+                    重新挑战 🔄
+                </button>
+                <button onclick="showStartScreen()" class="py-3 px-6 bg-slate-700 text-slate-300 font-bold text-sm rounded-2xl border border-slate-600 hover:bg-slate-600 active:scale-95 transition-all">
+                    返回主页 🏠
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Credit -->
+    <footer class="text-center py-2 text-[10px] text-slate-500">
+        二年级科学《混合物》宝可梦对战式课件 • 神奇科学实验室
+    </footer>
+
+
+    <!-- Custom Dialog Modal for Explanations -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 border-2 border-slate-600 rounded-3xl max-w-xs w-full p-6 text-center shadow-2xl scale-90 transition-transform duration-300" id="modal-box">
+            <div id="modal-emoji" class="text-6xl mb-3">💥</div>
+            <h3 id="modal-title" class="text-xl font-bold text-amber-400 mb-2">造成了致命一击！</h3>
+            <p id="modal-text" class="text-xs text-slate-300 mb-6 leading-relaxed">解析说明内容...</p>
+            <button onclick="closeModal()" id="modal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all">
+                继续对战 ⚔️
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        
+        // --- SOUND ENGINE (Web Audio API) ---
+        let soundEnabled = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type, duration, delay = 0) {
+            if (!soundEnabled) return;
+            setTimeout(() => {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {
+                    // Ignore autoplay restrictions prior to user interaction
+                }
+            }, delay * 1000);
+        }
+
+        function playHitSound() {
+            playTone(150, 'sawtooth', 0.1, 0);
+            playTone(80, 'square', 0.2, 0.05);
+        }
+
+        function playCorrectSound() {
+            playTone(523.25, 'sine', 0.08, 0);     // C5
+            playTone(659.25, 'sine', 0.08, 0.08);  // E5
+            playTone(783.99, 'sine', 0.12, 0.16);  // G5
+            playTone(1046.50, 'sine', 0.2, 0.24);  // C6
+        }
+
+        function playWrongSound() {
+            playTone(200, 'sawtooth', 0.15, 0);
+            playTone(140, 'sawtooth', 0.25, 0.1);
+        }
+
+        function playVictorySound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50, 880, 1046.50];
+            notes.forEach((freq, idx) => playTone(freq, 'triangle', 0.18, idx * 0.12));
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('btn-sound').innerText = soundEnabled ? '🔊 音效: 开' : '🔇 音效: 关';
+        }
+
+
+        // --- QUESTION BANK ---
+
+        // Stage 1: 12 Questions on Separation Methods (分离混合物)
+        const stage1Questions = [
+            {
+                title: "回形针 与 面粉",
+                desc: "回形针掉进面粉里了！怎么快速分离开？",
+                icon: "📎",
+                correct: "磁铁吸附",
+                options: ["用手挑选", "用磁铁吸", "用筛子筛", "加水漂浮"],
+                reason: "回形针是铁制成的，用【磁铁】可以快速把它从面粉中吸出来！"
+            },
+            {
+                title: "花生 与 面粉",
+                desc: "做蛋糕的面粉里混入了花生粒，怎么办？",
+                icon: "🥜",
+                correct: "用筛子筛",
+                options: ["用磁铁吸", "用筛子筛", "用过滤纸", "蒸发法"],
+                reason: "花生的颗粒比较大，【筛子】的小孔能让细面粉通过，把花生挡在上面！"
+            },
+            {
+                title: "枯叶 与 碎石",
+                desc: "扫地时枯叶和小碎石混在一起了，怎么分离？",
+                icon: "🍂",
+                correct: "漂浮法",
+                options: ["用磁铁吸", "蒸发法", "漂浮法", "用手挑"],
+                reason: "利用【漂浮法】：倒入水里，轻的枯叶会浮在水面上，重的小碎石会沉在水底！"
+            },
+            {
+                title: "沙子 与 水",
+                desc: "浑浊的泥沙水，怎么把不溶解的沙子彻底弄出来？",
+                icon: "⏳",
+                correct: "过滤法",
+                options: ["用手挑选", "用磁铁吸", "过滤法", "蒸发法"],
+                reason: "沙子不溶解于水，用【滤纸过滤】可以让干净的水流出，沙子留在滤纸上！"
+            },
+            {
+                title: "食盐 与 水",
+                desc: "盐已经彻底化在水里了，怎么重新得到食盐结晶？",
+                icon: "🧂",
+                correct: "蒸发法",
+                options: ["用筛子筛", "蒸发法", "过滤法", "用磁铁吸"],
+                reason: "把盐水晒干或加热【蒸发】，水分变成水蒸气跑掉后，就会留下白色的食盐颗粒！"
+            },
+            {
+                title: "铁屑 与 木屑",
+                desc: "木工桌上的铁屑和木屑混在一块了！",
+                icon: "⚙️",
+                correct: "用磁铁吸",
+                options: ["用磁铁吸", "用筛子筛", "蒸发法", "用手挑选"],
+                reason: "铁屑能被【磁铁】吸引，而木屑不会，磁铁一下就能把铁屑全吸走！"
+            },
+            {
+                title: "珍珠 与 奶茶",
+                desc: "想只要杯底的黑糖珍珠，不要奶茶液体。",
+                icon: "🧋",
+                correct: "用筛子筛",
+                options: ["用磁铁吸", "蒸发法", "用筛子筛", "漂浮法"],
+                reason: "用【滤网或筛子】，液体的奶茶会流走，大颗的珍珠就会留下来！"
+            },
+            {
+                title: "黄豆 与 细沙",
+                desc: "黄豆不小心洒在沙坑里混在一起了。",
+                icon: "🫘",
+                correct: "用筛子筛",
+                options: ["用筛子筛", "蒸发法", "用磁铁吸", "过滤法"],
+                reason: "细沙颗粒非常小会掉下筛孔，大的【黄豆】会被留在筛子上！"
+            },
+            {
+                title: "塑料颗粒 与 铁钉",
+                desc: "工厂里塑料小颗粒和铁钉混在桶里。",
+                icon: "🔩",
+                correct: "用磁铁吸",
+                options: ["漂浮法", "用磁铁吸", "蒸发法", "过滤法"],
+                reason: "铁钉是铁质的，用【磁铁】靠近就能把铁钉吸走，留下塑料颗粒！"
+            },
+            {
+                title: "白糖 与 水",
+                desc: "糖水中的水分怎么去除，重新获得糖？",
+                icon: "🍬",
+                correct: "蒸发法",
+                options: ["用筛子筛", "用手挑选", "蒸发法", "用磁铁吸"],
+                reason: "糖溶解在水里形成溶液，通过【加热蒸发】水分，可以重新得到白糖！"
+            },
+            {
+                title: "泡沫塑料 与 鹅卵石",
+                desc: "快递盒里的泡沫碎块和鹅卵石混在一起。",
+                icon: "📦",
+                correct: "漂浮法",
+                options: ["蒸发法", "漂浮法", "用磁铁吸", "过滤法"],
+                reason: "倒入水里，极轻的【泡沫塑料】会浮在水面，重的鹅卵石会沉底，轻松分离！"
+            },
+            {
+                title: "铁片 与 塑料片",
+                desc: "废品回收站要把铁片从塑料片中分出来。",
+                icon: "🧲",
+                correct: "用磁铁吸",
+                options: ["用磁铁吸", "用筛子筛", "蒸发法", "过滤法"],
+                reason: "【磁铁】具有吸引铁质物体的特性，能快速分离铁片与塑料片！"
+            }
+        ];
+
+        // Stage 2: 12 Questions on Solubility (可以溶解 与 不能溶解)
+        const stage2Questions = [
+            {
+                title: "蜜糖 (Honey)",
+                desc: "把蜜糖加入温水里并搅拌，它会...",
+                icon: "🍯",
+                correct: "可以溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "蜜糖放入水里搅拌后会均匀分散在水里，【可以溶解】！"
+            },
+            {
+                title: "沙子 (Sand)",
+                desc: "把海边的沙子放入水里并搅拌，它会...",
+                icon: "⏳",
+                correct: "不能溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "无论怎么搅拌，沙子颗粒依然沉在水底，【不能溶解】！"
+            },
+            {
+                title: "食盐 (Salt)",
+                desc: "炒菜用的食盐放入水里，它会...",
+                icon: "🧂",
+                correct: "可以溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "食盐颗粒会在水里“隐形”化开，变成盐水，【可以溶解】！"
+            },
+            {
+                title: "铁钉 (Iron Nail)",
+                desc: "铁钉放入水里泡几天，它会...",
+                icon: "🔩",
+                correct: "不能溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "铁钉是坚硬的金属，不会溶解在水里，【不能溶解】！"
+            },
+            {
+                title: "面粉 (Flour)",
+                desc: "做馒头的面粉加入水里搅拌，它会...",
+                icon: "🍚",
+                correct: "不能溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "面粉在水里只会形成浑浊的悬浊液，静置后会沉淀，【不能溶解】！"
+            },
+            {
+                title: "冰糖 (Sugar Cube)",
+                desc: "喝花茶时放一颗冰糖，它会...",
+                icon: "🍬",
+                correct: "可以溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "冰糖是蔗糖结晶，在水里搅拌会完全化开，【可以溶解】！"
+            },
+            {
+                title: "木屑 (Sawdust)",
+                desc: "锯木头掉落的木屑撒入水里，它会...",
+                icon: "🪵",
+                correct: "不能溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "木屑不溶于水，并且会浮在水面上，【不能溶解】！"
+            },
+            {
+                title: "即溶咖啡粉 (Coffee)",
+                desc: "把即溶咖啡粉倒入热水中搅拌，它会...",
+                icon: "☕",
+                correct: "可以溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "即溶咖啡粉会迅速融入水里形成香浓咖啡，【可以溶解】！"
+            },
+            {
+                title: "橡皮擦 (Eraser)",
+                desc: "文具橡皮擦掉进水杯里，它会...",
+                icon: "🧹",
+                correct: "不能溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "橡皮擦是橡胶材质，完全【不能溶解】在水里！"
+            },
+            {
+                title: "奶粉 (Milk Powder)",
+                desc: "冲泡奶粉时加入温水搅拌，它会...",
+                icon: "🥛",
+                correct: "可以溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "优质奶粉能够均匀溶解在温水里，变成美味牛奶，【可以溶解】！"
+            },
+            {
+                title: "小石子 (Pebble)",
+                desc: "公园里捡的小石子放进水里，它会...",
+                icon: "🪨",
+                correct: "不能溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "石子是矿物固体，【不能溶解】于水中！"
+            },
+            {
+                title: "柠檬汁 (Lemon Juice)",
+                desc: "新鲜挤出的柠檬汁倒入清水里，它会...",
+                icon: "🍋",
+                correct: "可以溶解",
+                options: ["可以溶解", "不能溶解"],
+                reason: "柠檬汁液体能与水完美融合，【可以溶解】！"
+            }
+        ];
+
+
+        // --- GAME STATE VARIABLES ---
+        let currentStage = 1; // 1 or 2
+        let questionIndex = 0;
+        let score = 0;
+        
+        let playerHp = 100;
+        const maxPlayerHp = 100;
+
+        let monsterHp = 120;
+        let maxMonsterHp = 120;
+
+        const monsterInfo = {
+            1: { name: "分离怪魔", lv: "Lv.12", emoji: "👾", maxHp: 120, damagePerHit: 10 },
+            2: { name: "不溶幻影", lv: "Lv.25", emoji: "👻", maxHp: 120, damagePerHit: 10 }
+        };
+
+
+        // --- ROUTING & SCREEN TRANSITIONS ---
+        function showStartScreen() {
+            document.getElementById('screen-start').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+        }
+
+        function startGame() {
+            currentStage = 1;
+            questionIndex = 0;
+            score = 0;
+            playerHp = maxPlayerHp;
+
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+
+            setupStage();
+        }
+
+        function setupStage() {
+            questionIndex = 0;
+            const info = monsterInfo[currentStage];
+            monsterHp = info.maxHp;
+            maxMonsterHp = info.maxHp;
+
+            document.getElementById('monster-name').innerText = info.name;
+            document.getElementById('monster-lv').innerText = info.lv;
+            document.getElementById('monster-emoji').innerText = info.emoji;
+            document.getElementById('stage-indicator').innerText = `关卡 ${currentStage}/2`;
+
+            updateHpBars();
+            loadQuestion();
+        }
+
+        function finishGame() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            document.getElementById('final-score').innerText = score + " 分";
+            
+            let title = "初级科学助理 🧪";
+            if (score >= 220) {
+                title = "超级科学大搜查官 🥇";
+            } else if (score >= 180) {
+                title = "资深实验神枪手 🎯";
+            }
+            document.getElementById('badge-title').innerText = "称号：" + title;
+            playVictorySound();
+        }
+
+
+        // --- BATTLE & QUESTION LOGIC ---
+        function getCurrentQuestions() {
+            return currentStage === 1 ? stage1Questions : stage2Questions;
+        }
+
+        function loadQuestion() {
+            const questions = getCurrentQuestions();
+            const q = questions[questionIndex];
+
+            // Render Header & Text
+            document.getElementById('q-number-tag').innerText = `题目 ${questionIndex + 1}/${questions.length}`;
+            document.getElementById('q-category-tag').innerText = currentStage === 1 ? "混合物分离" : "溶解判定";
+            document.getElementById('q-title').innerText = q.title;
+            document.getElementById('q-desc').innerText = q.desc;
+            document.getElementById('q-icon-box').innerText = q.icon;
+
+            // Render Option Buttons
+            const optionsBox = document.getElementById('options-container');
+            optionsBox.innerHTML = '';
+
+            // Layout adjust for 2 vs 4 options
+            if (q.options.length === 2) {
+                optionsBox.className = "grid grid-cols-2 gap-3";
+            } else {
+                optionsBox.className = "grid grid-cols-2 gap-2.5";
+            }
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "pokemon-card py-3 px-2 text-slate-800 font-bold text-sm rounded-xl hover:bg-amber-100 active:scale-95 transition-all flex items-center justify-center border-2 border-slate-700 shadow-md";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(opt);
+                optionsBox.appendChild(btn);
+            });
+
+            document.getElementById('battle-log').innerText = `第 ${currentStage} 关：请选择正确的方法发动攻击！💥`;
+        }
+
+        function handleAnswer(selectedOpt) {
+            const questions = getCurrentQuestions();
+            const q = questions[questionIndex];
+
+            if (selectedOpt === q.correct) {
+                // --- CORRECT ANSWER: PLAYER ATTACKS MONSTER ---
+                score += 10;
+                playCorrectSound();
+
+                // Trigger Attack FX & Damage Pop
+                triggerAttackAnimation();
+
+                // Deduct Monster HP
+                const info = monsterInfo[currentStage];
+                monsterHp = Math.max(0, monsterHp - info.damagePerHit);
+                updateHpBars();
+
+                document.getElementById('battle-log').innerText = `🎯 回答正确！对 ${info.name} 造成 10 点伤害！`;
+
+                setTimeout(() => {
+                    showModal("⚔️ 技能命中！", q.reason, "继续进攻 🚀", "💥", () => {
+                        nextQuestion();
+                    });
+                }, 400);
+
+            } else {
+                // --- WRONG ANSWER: MONSTER ATTACKS PLAYER ---
+                playWrongSound();
+
+                // Player takes small damage
+                playerHp = Math.max(10, playerHp - 5);
+                updateHpBars();
+
+                // Player Shake Animation
+                const playerSprite = document.getElementById('player-sprite-box');
+                playerSprite.classList.add('animate-shake');
+                setTimeout(() => playerSprite.classList.remove('animate-shake'), 500);
+
+                // Show Damage pop on player
+                const pPop = document.getElementById('player-damage-pop');
+                pPop.innerText = "-5 HP";
+                pPop.classList.remove('hidden');
+                setTimeout(() => pPop.classList.add('hidden'), 800);
+
+                document.getElementById('battle-log').innerText = `❌ 回答错误！受到了怪兽的反击！`;
+
+                setTimeout(() => {
+                    showModal("🛡️ 受到反击！", `正确答案是【${q.correct}】！\n${q.reason}`, "重新准备 🛡️", "❌", () => {
+                        nextQuestion();
+                    });
+                }, 400);
+            }
+        }
+
+        function nextQuestion() {
+            questionIndex++;
+            const questions = getCurrentQuestions();
+
+            if (questionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                // Stage cleared!
+                if (currentStage === 1) {
+                    currentStage = 2;
+                    showModal("🎉 击败了分离怪魔！", "太棒了！你完美掌握了混合物分离的所有方法！接下来进入第二关，挑战【不溶幻影】吧！", "挑战关卡 2 ⚔️", "🏆", () => {
+                        setupStage();
+                    });
+                } else {
+                    finishGame();
+                }
+            }
+        }
+
+
+        // --- ANIMATIONS & UI UPDATES ---
+        function triggerAttackAnimation() {
+            // Monster shake
+            const monsterSprite = document.getElementById('monster-sprite-box');
+            monsterSprite.classList.add('animate-shake');
+            setTimeout(() => monsterSprite.classList.remove('animate-shake'), 500);
+
+            // FX Slash
+            const fx = document.getElementById('attack-fx');
+            fx.classList.remove('hidden');
+            setTimeout(() => fx.classList.add('hidden'), 400);
+
+            // Monster damage Pop
+            const pop = document.getElementById('monster-damage-pop');
+            pop.innerText = "-10 HP";
+            pop.classList.remove('hidden');
+            setTimeout(() => pop.classList.add('hidden'), 800);
+        }
+
+        function updateHpBars() {
+            // Monster HP
+            const mPct = (monsterHp / maxMonsterHp) * 100;
+            const mFill = document.getElementById('monster-hp-fill');
+            mFill.style.width = mPct + "%";
+            document.getElementById('monster-hp-text').innerText = `HP: ${monsterHp} / ${maxMonsterHp}`;
+            
+            if (mPct < 30) {
+                mFill.className = "hp-bar-fill bg-rose-500 h-full rounded-full";
+            } else if (mPct < 60) {
+                mFill.className = "hp-bar-fill bg-amber-400 h-full rounded-full";
+            } else {
+                mFill.className = "hp-bar-fill bg-emerald-500 h-full rounded-full";
+            }
+
+            // Player HP
+            const pPct = (playerHp / maxPlayerHp) * 100;
+            const pFill = document.getElementById('player-hp-fill');
+            pFill.style.width = pPct + "%";
+            document.getElementById('player-hp-text').innerText = `HP: ${playerHp} / ${maxPlayerHp}`;
+        }
+
+
+        // --- CUSTOM MODAL CONTROLLER ---
+        let modalCallback = null;
+
+        function showModal(title, text, btnText, emoji, callback) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal-btn').innerText = btnText;
+            document.getElementById('modal-emoji').innerText = emoji;
+            modalCallback = callback;
+
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-90');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-90');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (modalCallback) modalCallback();
+            }, 250);
+        }
+    </script>
+</body>
+</html>
